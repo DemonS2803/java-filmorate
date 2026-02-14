@@ -4,21 +4,20 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.Duration;
 import java.util.Date;
 
 /**
- * Film.
+ * User.
  */
 @Getter
 @Setter
 @EqualsAndHashCode
-public class Film {
+public class User {
 
     Long id;
+    String email;
+    String login;
     String name;
-    String description;
-    Date releaseDate;
-    Duration duration;
+    Date birthday;
 
 }
