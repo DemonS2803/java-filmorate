@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -26,7 +25,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(FilmController.class)
-class FilmControllerTest {
+public class FilmControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -148,7 +147,12 @@ class FilmControllerTest {
     }
 
     @ParameterizedTest
-    @MethodSource("validReleaseDateProvider")
+    @ValueSource(strings = {
+            "1895-12-29",
+            "1900-01-01",
+            "2000-01-01",
+            "2024-01-01"
+    })
     void testFilmController_addFilm_WithValidReleaseDates_ShouldSucceed(String dateString) throws Exception {
         Date releaseDate = dateFormat.parse(dateString);
         validFilmDto.setReleaseDate(releaseDate);
@@ -159,9 +163,13 @@ class FilmControllerTest {
                 .andExpect(status().isOk());
     }
 
-    @ParameterizedTest(name = "Release date: {0} should be invalid")
-    @MethodSource("invalidReleaseDateProvider")
-    @DisplayName("Should reject invalid release dates")
+    @ParameterizedTest
+    @ValueSource(strings = {
+        "1895-12-27",
+        "1895-12-28",
+        "1800-01-01",
+        "1700-01-01"
+    })
     void testFilmController_addFilm_WithInvalidReleaseDates_ShouldReject(String dateString) throws Exception {
         Date releaseDate = dateFormat.parse(dateString);
         validFilmDto.setReleaseDate(releaseDate);
@@ -172,9 +180,8 @@ class FilmControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
-    @ParameterizedTest(name = "Name: '{0}' should be {1}")
+    @ParameterizedTest
     @MethodSource("nameValidationProvider")
-    @DisplayName("Should validate film names correctly")
     void testFilmController_addFilm_WithVariousNames_ShouldValidateCorrectly(String name, boolean shouldBeValid) throws Exception {
         validFilmDto.setName(name);
 
@@ -189,7 +196,7 @@ class FilmControllerTest {
         }
     }
 
-    @ParameterizedTest(name = "Description length: {0}")
+    @ParameterizedTest
     @MethodSource("descriptionValidationProvider")
     void testFilmController_addFilm_WithVariousDescriptions_ShouldValidateCorrectly(String description, boolean shouldBeValid) throws Exception {
         validFilmDto.setDescription(description);
@@ -247,24 +254,6 @@ class FilmControllerTest {
                 Arguments.of(blankNameFilm),
                 Arguments.of(nullReleaseDateFilm),
                 Arguments.of(nullDurationFilm)
-        );
-    }
-
-    private static Stream<Arguments> validReleaseDateProvider() {
-        return Stream.of(
-                Arguments.of("1895-12-29"),
-                Arguments.of("1900-01-01"),
-                Arguments.of("2000-01-01"),
-                Arguments.of("2024-01-01")
-        );
-    }
-
-    private static Stream<Arguments> invalidReleaseDateProvider() {
-        return Stream.of(
-                Arguments.of("1895-12-27"),
-                Arguments.of("1895-12-28"),
-                Arguments.of("1800-01-01"),
-                Arguments.of("1700-01-01")
         );
     }
 

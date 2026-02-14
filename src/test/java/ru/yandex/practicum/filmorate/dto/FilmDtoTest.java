@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class FilmDtoTest {
 
-    private Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+    private final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
     private FilmDto film;
 
@@ -99,6 +99,7 @@ public class FilmDtoTest {
     }
 
     @ParameterizedTest
+    @NullSource
     @MethodSource("provideInvalidDurations")
     void testFilmDtoValidation_whenInvalidDuration(Integer invalidDuration) {
         film.setDuration(invalidDuration);
@@ -112,9 +113,8 @@ public class FilmDtoTest {
 
     private static Stream<Arguments> provideInvalidDurations() {
         return Stream.of(
-                Arguments.of(-10, " быть положительной"),
-                Arguments.of(0, " быть положительной"),
-                Arguments.of(null, " быть положительной")
+                Arguments.of(-10),
+                Arguments.of(0)
         );
     }
 
