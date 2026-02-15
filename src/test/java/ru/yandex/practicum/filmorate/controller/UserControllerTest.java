@@ -53,7 +53,7 @@ public class UserControllerTest {
 
     @Test
     void testUserController_getUsers_ShouldReturnEmptyList() throws Exception {
-        mockMvc.perform(get("/api/v1/users"))
+        mockMvc.perform(get("/users"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$", hasSize(0)));
@@ -61,7 +61,7 @@ public class UserControllerTest {
 
     @Test
     void testUserController_addUser_And_GetUsers_ShouldWorkTogether() throws Exception {
-        mockMvc.perform(post("/api/v1/users")
+        mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validUserDto)))
                 .andExpect(status().isOk())
@@ -70,7 +70,7 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$.login", is("login")))
                 .andExpect(jsonPath("$.name", is("username")));
 
-        mockMvc.perform(get("/api/v1/users"))
+        mockMvc.perform(get("/users"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].id", is(1)))
@@ -82,7 +82,7 @@ public class UserControllerTest {
     void testUserController_addUser_WithoutId_ShouldGenerateNewId() throws Exception {
         validUserDto.setId(null);
 
-        mockMvc.perform(post("/api/v1/users")
+        mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validUserDto)))
                 .andExpect(status().isOk())
@@ -94,7 +94,7 @@ public class UserControllerTest {
         secondUser.setName("Second User");
         secondUser.setBirthday(dateFormat.parse("1995-01-01"));
 
-        mockMvc.perform(post("/api/v1/users")
+        mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(secondUser)))
                 .andExpect(status().isOk())
@@ -103,7 +103,7 @@ public class UserControllerTest {
 
     @Test
     void testUserController_addUser_WithExistingId_ShouldGenerateNewId() throws Exception {
-        mockMvc.perform(post("/api/v1/users")
+        mockMvc.perform(post("/users")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(validUserDto)));
 
@@ -114,7 +114,7 @@ public class UserControllerTest {
         duplicateUser.setName("Duplicate User");
         duplicateUser.setBirthday(dateFormat.parse("2000-01-01"));
 
-        mockMvc.perform(post("/api/v1/users")
+        mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(duplicateUser)))
                 .andExpect(status().isOk())
@@ -124,7 +124,7 @@ public class UserControllerTest {
 
     @Test
     void testUserController_updateUser_ShouldUpdateExistingUser() throws Exception {
-        mockMvc.perform(post("/api/v1/users")
+        mockMvc.perform(post("/users")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(validUserDto)));
 
@@ -134,7 +134,7 @@ public class UserControllerTest {
         validUserDto.setBirthday(dateFormat.parse("1985-01-01"));
         validUserDto.setBirthday(new Date(validUserDto.getBirthday().getTime() + 30000000));
 
-        mockMvc.perform(put("/api/v1/users")
+        mockMvc.perform(put("/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validUserDto)))
                 .andExpect(status().isOk())
@@ -144,7 +144,7 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$.name", is("Updated Name")))
                 .andExpect(jsonPath("$.birthday", is("1985-01-01")));
 
-        mockMvc.perform(get("/api/v1/users"))
+        mockMvc.perform(get("/users"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].email", is("updated@example.com")))
                 .andExpect(jsonPath("$[0].login", is("updatedLogin")));
@@ -154,7 +154,7 @@ public class UserControllerTest {
     void testUserController_updateUser_WithoutId_ShouldReturnBadRequest() throws Exception {
         validUserDto.setId(null);
 
-        mockMvc.perform(put("/api/v1/users")
+        mockMvc.perform(put("/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validUserDto)))
                 .andExpect(status().isBadRequest());
@@ -164,7 +164,7 @@ public class UserControllerTest {
     void testUserController_updateUser_WithNonExistingId_ShouldReturnBadRequest() throws Exception {
         validUserDto.setId(999L);
 
-        mockMvc.perform(put("/api/v1/users")
+        mockMvc.perform(put("/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validUserDto)))
                 .andExpect(status().isBadRequest());
@@ -173,7 +173,7 @@ public class UserControllerTest {
     @ParameterizedTest
     @MethodSource("invalidUserProvider")
     void testUserController_addUser_WithInvalidData_ShouldReturnBadRequest(UserDto invalidUserDto) throws Exception {
-        mockMvc.perform(post("/api/v1/users")
+        mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(invalidUserDto)))
                 .andExpect(status().isBadRequest());
@@ -189,12 +189,12 @@ public class UserControllerTest {
         existingUser.setName("Existing User");
         existingUser.setBirthday(dateFormat.parse("1990-01-01"));
 
-        mockMvc.perform(post("/api/v1/users")
+        mockMvc.perform(post("/users")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(existingUser)));
 
         invalidUserDto.setId(1L);
-        mockMvc.perform(put("/api/v1/users")
+        mockMvc.perform(put("/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(invalidUserDto)))
                 .andExpect(status().isBadRequest());
@@ -210,7 +210,7 @@ public class UserControllerTest {
     void testUserController_addUser_WithValidEmails_ShouldSucceed(String email) throws Exception {
         validUserDto.setEmail(email);
 
-        mockMvc.perform(post("/api/v1/users")
+        mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validUserDto)))
                 .andExpect(status().isOk())
@@ -229,7 +229,7 @@ public class UserControllerTest {
     void testUserController_addUser_WithInvalidEmails_ShouldReject(String email) throws Exception {
         validUserDto.setEmail(email);
 
-        mockMvc.perform(post("/api/v1/users")
+        mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validUserDto)))
                 .andExpect(status().isBadRequest());
@@ -240,7 +240,7 @@ public class UserControllerTest {
     void testUserController_addUser_WithValidLogins_ShouldSucceed(String login) throws Exception {
         validUserDto.setLogin(login);
 
-        mockMvc.perform(post("/api/v1/users")
+        mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validUserDto)))
                 .andExpect(status().isOk())
@@ -259,7 +259,7 @@ public class UserControllerTest {
     void testUserController_addUser_WithInlogins_ShouldReject(String login) throws Exception {
         validUserDto.setLogin(login);
 
-        mockMvc.perform(post("/api/v1/users")
+        mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validUserDto)))
                 .andExpect(status().isBadRequest());
@@ -277,7 +277,7 @@ public class UserControllerTest {
         validUserDto.setBirthday(birthday);
         validUserDto.setBirthday(new Date(validUserDto.getBirthday().getTime() + 30000000));
 
-        mockMvc.perform(post("/api/v1/users")
+        mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validUserDto)))
                 .andExpect(status().isOk())
@@ -294,7 +294,7 @@ public class UserControllerTest {
         Date birthday = dateFormat.parse(dateString);
         validUserDto.setBirthday(birthday);
 
-        mockMvc.perform(post("/api/v1/users")
+        mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validUserDto)))
                 .andExpect(status().isBadRequest());
@@ -305,7 +305,7 @@ public class UserControllerTest {
     void testUserController_addUser_WithVariousEmails_ShouldValidateCorrectly(String email, boolean shouldBeValid) throws Exception {
         validUserDto.setEmail(email);
 
-        var result = mockMvc.perform(post("/api/v1/users")
+        var result = mockMvc.perform(post("/users")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(validUserDto)));
 
@@ -321,7 +321,7 @@ public class UserControllerTest {
     void testUserController_addUser_WithVariousLogins_ShouldValidateCorrectly(String login, boolean shouldBeValid) throws Exception {
         validUserDto.setLogin(login);
 
-        var result = mockMvc.perform(post("/api/v1/users")
+        var result = mockMvc.perform(post("/users")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(validUserDto)));
 

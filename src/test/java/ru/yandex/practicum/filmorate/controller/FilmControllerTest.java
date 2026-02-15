@@ -56,7 +56,7 @@ public class FilmControllerTest {
 
     @Test
     void testFilmController_getFilms_ShouldReturnEmptyList() throws Exception {
-        mockMvc.perform(get("/api/v1/films"))
+        mockMvc.perform(get("/films"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$", hasSize(0)));
@@ -64,7 +64,7 @@ public class FilmControllerTest {
 
     @Test
     void testFilmController_addFilm_And_GetFilms_ShouldWorkTogether() throws Exception {
-        mockMvc.perform(post("/api/v1/films")
+        mockMvc.perform(post("/films")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validFilmDto)))
                 .andExpect(status().isOk())
@@ -73,7 +73,7 @@ public class FilmControllerTest {
                 .andExpect(jsonPath("$.description", is("description")))
                 .andExpect(jsonPath("$.duration", is(120)));
 
-        mockMvc.perform(get("/api/v1/films"))
+        mockMvc.perform(get("/films"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].id", is(1)))
@@ -82,7 +82,7 @@ public class FilmControllerTest {
 
     @Test
     void testFilmController_updateFilm_ShouldUpdateExistingFilm() throws Exception {
-        mockMvc.perform(post("/api/v1/films")
+        mockMvc.perform(post("/films")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(validFilmDto)));
 
@@ -90,7 +90,7 @@ public class FilmControllerTest {
         validFilmDto.setDescription("descr edited");
         validFilmDto.setDuration(150);
 
-        mockMvc.perform(put("/api/v1/films")
+        mockMvc.perform(put("/films")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validFilmDto)))
                 .andExpect(status().isOk())
@@ -99,7 +99,7 @@ public class FilmControllerTest {
                 .andExpect(jsonPath("$.description", is("descr edited")))
                 .andExpect(jsonPath("$.duration", is(150)));
 
-        mockMvc.perform(get("/api/v1/films"))
+        mockMvc.perform(get("/films"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].name", is("film edited")))
                 .andExpect(jsonPath("$[0].description", is("descr edited")));
@@ -108,7 +108,7 @@ public class FilmControllerTest {
     @ParameterizedTest
     @MethodSource("invalidFilmProvider")
     void testFilmController_addFilm_WithInvalidData_ShouldReturnBadRequest(FilmDto invalidFilmDto) throws Exception {
-        mockMvc.perform(post("/api/v1/films")
+        mockMvc.perform(post("/films")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(invalidFilmDto)))
                 .andExpect(status().isBadRequest());
@@ -117,7 +117,7 @@ public class FilmControllerTest {
     @ParameterizedTest
     @MethodSource("invalidFilmProvider")
     void testFilmController_updateFilm_WithInvalidData_ShouldReturnBadRequest(FilmDto invalidFilmDto) throws Exception {
-        mockMvc.perform(put("/api/v1/films")
+        mockMvc.perform(put("/films")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(invalidFilmDto)))
                 .andExpect(status().isBadRequest());
@@ -128,7 +128,7 @@ public class FilmControllerTest {
     void testFilmController_addFilm_WithValidDurations_ShouldSucceed(Integer duration) throws Exception {
         validFilmDto.setDuration(duration);
 
-        mockMvc.perform(post("/api/v1/films")
+        mockMvc.perform(post("/films")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validFilmDto)))
                 .andExpect(status().isOk())
@@ -140,7 +140,7 @@ public class FilmControllerTest {
     void testFilmController_addFilm_WithInvalidDurations_ShouldReject(Integer duration) throws Exception {
         validFilmDto.setDuration(duration);
 
-        mockMvc.perform(post("/api/v1/films")
+        mockMvc.perform(post("/films")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validFilmDto)))
                 .andExpect(status().isBadRequest());
@@ -157,7 +157,7 @@ public class FilmControllerTest {
         Date releaseDate = dateFormat.parse(dateString);
         validFilmDto.setReleaseDate(releaseDate);
 
-        mockMvc.perform(post("/api/v1/films")
+        mockMvc.perform(post("/films")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validFilmDto)))
                 .andExpect(status().isOk());
@@ -173,7 +173,7 @@ public class FilmControllerTest {
         Date releaseDate = dateFormat.parse(dateString);
         validFilmDto.setReleaseDate(releaseDate);
 
-        mockMvc.perform(post("/api/v1/films")
+        mockMvc.perform(post("/films")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validFilmDto)))
                 .andExpect(status().isBadRequest());
@@ -184,7 +184,7 @@ public class FilmControllerTest {
     void testFilmController_addFilm_WithVariousNames_ShouldValidateCorrectly(String name, boolean shouldBeValid) throws Exception {
         validFilmDto.setName(name);
 
-        var result = mockMvc.perform(post("/api/v1/films")
+        var result = mockMvc.perform(post("/films")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(validFilmDto)));
 
@@ -200,7 +200,7 @@ public class FilmControllerTest {
     void testFilmController_addFilm_WithVariousDescriptions_ShouldValidateCorrectly(String description, boolean shouldBeValid) throws Exception {
         validFilmDto.setDescription(description);
 
-        var result = mockMvc.perform(post("/api/v1/films")
+        var result = mockMvc.perform(post("/films")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(validFilmDto)));
 
