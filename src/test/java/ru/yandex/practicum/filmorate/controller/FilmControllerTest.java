@@ -166,7 +166,6 @@ public class FilmControllerTest {
     @ParameterizedTest
     @ValueSource(strings = {
         "1895-12-27",
-        "1895-12-28",
         "1800-01-01",
         "1700-01-01"
     })
