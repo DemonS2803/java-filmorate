@@ -14,7 +14,6 @@ import ru.yandex.practicum.filmorate.exceptions.NoUserFoundException;
 @Slf4j
 @RestControllerAdvice
 public class ExceptionHandlerController {
-    
     @ExceptionHandler(InvalidUserDataException.class)
     public ResponseEntity<?> handleInvalidUserDataException(final InvalidUserDataException e) {
         log.error(e.getMessage(), e);
