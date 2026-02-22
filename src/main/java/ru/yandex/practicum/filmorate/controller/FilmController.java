@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
+import ru.yandex.practicum.filmorate.exceptions.InvalidFilmDataException;
+import ru.yandex.practicum.filmorate.exceptions.NoFilmFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.Collection;
@@ -25,6 +27,7 @@ public class FilmController {
 
     @GetMapping
     public Collection<Film> getFilms() {
+        log.debug("Get all films info");
         return films.values();
     }
 
@@ -49,12 +52,10 @@ public class FilmController {
         log.info("User want update film: {}", incomingFilmDto);
         Film film = Film.of(incomingFilmDto);
         if (film.getId() == null) {
-            log.error("Film id is empty");
-            throw new IllegalArgumentException("Film id is empty");
+            throw new InvalidFilmDataException("Film id is empty. Failed to update film");
         }
         if (!films.containsKey(film.getId())) {
-            log.warn("Film with id {} does not exist", film.getId());
-            throw new IllegalArgumentException("Film with id " + film.getId() + " does not exist");
+            throw new NoFilmFoundException("Film with id " + film.getId() + " does not exist");
         }
 
         log.info("User updated film with id {}", film.getId());

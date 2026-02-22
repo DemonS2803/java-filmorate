@@ -19,7 +19,7 @@ public class FilmDto {
     private Long id;
     @NotBlank(message = "Имя не может быть пустым")
     private String name;
-    @Size(max = 200, message = "Описанее не более 200 символов")
+    @Size(max = 200, message = "Описание не более 200 символов")
     private String description;
     @NotNull(message = "Дата релиза не может быть null")
     @JsonFormat(pattern = "yyyy-MM-dd")

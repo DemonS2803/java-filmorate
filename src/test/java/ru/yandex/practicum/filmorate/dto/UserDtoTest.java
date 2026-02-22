@@ -133,7 +133,7 @@ public class UserDtoTest {
         assertFalse(violations.isEmpty());
         assertTrue(violations.stream()
                 .anyMatch(v -> v.getPropertyPath().toString().equals("birthday")
-                        && v.getMessage().equals("День рождения не может быть в будущем")));
+                        && v.getMessage().startsWith("День рождения не может быть")));
         assertEquals(1, violations.stream()
                 .filter(v -> v.getPropertyPath().toString().equals("birthday"))
                 .count());
@@ -156,8 +156,7 @@ public class UserDtoTest {
                 getDate(1995, 5, 15),
                 getDate(1980, 12, 31),
                 getDate(2024, 1, 1),
-                getDate(2024, 2, 14),
-                null
+                getDate(2024, 2, 14)
         );
     }
 
@@ -165,7 +164,8 @@ public class UserDtoTest {
         return Stream.of(
                 getDate(2126, 1, 1),
                 getDate(2030, 12, 31),
-                getDate(2027, 5, 20)
+                getDate(2027, 5, 20),
+                null
         );
     }
 

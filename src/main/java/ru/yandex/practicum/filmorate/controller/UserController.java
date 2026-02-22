@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.dto.ErrorResponse;
 import ru.yandex.practicum.filmorate.dto.UserDto;
+import ru.yandex.practicum.filmorate.exceptions.InvalidUserDataException;
+import ru.yandex.practicum.filmorate.exceptions.NoUserFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.Collection;
@@ -28,6 +30,7 @@ public class UserController {
 
     @GetMapping
     public Collection<User> getUsers() {
+        log.debug("Get all users info");
         return users.values();
     }
 
@@ -49,19 +52,13 @@ public class UserController {
 
     @PutMapping
     public ResponseEntity<?> updateUser(@Valid @RequestBody UserDto incomingUserDto) {
-        log.info("User want update user: {}", incomingUserDto);
+        log.info("Update user {} request", incomingUserDto);
         User updatedUser = User.of(incomingUserDto);
         if (updatedUser.getId() == null) {
-            log.error("User id is empty");
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            throw new InvalidUserDataException("User id is empty. Failed to update user");
         }
         if (!users.containsKey(updatedUser.getId())) {
-            String error = "User with id " + updatedUser.getId() + " not found";
-            log.warn(error);
-            return new ResponseEntity<>(
-                    new ErrorResponse(404, "Failed to create user", error),
-                    HttpStatus.NOT_FOUND
-            );
+            throw new NoUserFoundException("User with id " + updatedUser.getId() + " not found");
         }
 
         log.info("User updated user with id {}", updatedUser.getId());
