@@ -1,11 +1,12 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import lombok.extern.slf4j.Slf4j;
 import ru.yandex.practicum.filmorate.dto.ErrorResponse;
 import ru.yandex.practicum.filmorate.exceptions.InvalidFilmDataException;
 import ru.yandex.practicum.filmorate.exceptions.InvalidUserDataException;

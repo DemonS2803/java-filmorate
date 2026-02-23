@@ -1,14 +1,14 @@
 package ru.yandex.practicum.filmorate.model;
 
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import ru.yandex.practicum.filmorate.dto.UserDto;
-
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * User.

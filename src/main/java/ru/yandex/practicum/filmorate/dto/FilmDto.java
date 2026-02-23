@@ -1,5 +1,9 @@
 package ru.yandex.practicum.filmorate.dto;
 
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Set;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
@@ -8,10 +12,6 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Set;
 
 @Getter
 @Setter

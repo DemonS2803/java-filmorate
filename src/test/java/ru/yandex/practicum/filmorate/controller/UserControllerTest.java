@@ -1,33 +1,29 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.text.SimpleDateFormat;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.stream.Stream;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.InjectMocks;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import ru.yandex.practicum.filmorate.dto.UserDto;
 import ru.yandex.practicum.filmorate.exceptions.InvalidUserDataException;
 import ru.yandex.practicum.filmorate.exceptions.NoUserFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
-
-import java.text.SimpleDateFormat;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.stream.Stream;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -45,8 +41,6 @@ public class UserControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-//    @MockBean
-//    private UserController userController;
     @MockBean
     private UserService userService;
 
@@ -59,10 +53,6 @@ public class UserControllerTest {
 
     @BeforeEach
     void setUp() throws Exception {
-//        mockMvc =
-//                MockMvcBuilders.standaloneSetup(backupController)
-//                        .setControllerAdvice(new ExceptionHandlerController(localizationService))
-//                        .build();
         validUserDto = new UserDto();
         validUserDto.setId(1L);
         validUserDto.setEmail("user@example.com");
