@@ -17,4 +17,6 @@ public interface FilmStorage {
 
     boolean delete(long id);
 
+    List<Film> findMostPopularFilms(Integer size);
+
 }

@@ -11,6 +11,7 @@ import lombok.Setter;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -27,6 +28,7 @@ public class FilmDto {
     @NotNull(message = "Продолжительность должна быть положительной")
     @Positive(message = "Продолжительность должна быть положительной")
     private Integer duration;
+    private Set<Long> likedByUsers;
 
     @AssertTrue(message = "Фильм выпущен не ранее 18.12.1895")
     private boolean isNotBeforeFirstFilm() {
