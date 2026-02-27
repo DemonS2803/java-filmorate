@@ -65,8 +65,8 @@ class UserServiceTest {
 
     @Test
     void addToFriend_ShouldAddFriendship_WhenBothUsersExist() {
-        when(userStorage.findUserById(1L)).thenReturn(Optional.of(user1));
-        when(userStorage.findUserById(2L)).thenReturn(Optional.of(user2));
+        when(userStorage.findUserByIdOrThrow(1L)).thenReturn(user1);
+        when(userStorage.findUserByIdOrThrow(2L)).thenReturn(user2);
         when(userStorage.update(any(User.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -78,34 +78,34 @@ class UserServiceTest {
         assertEquals(1, user2.getFriends().size());
 
         verify(userStorage, times(2)).update(any(User.class));
-        verify(userStorage).findUserById(1L);
-        verify(userStorage).findUserById(2L);
+        verify(userStorage).findUserByIdOrThrow(1L);
+        verify(userStorage).findUserByIdOrThrow(2L);
     }
 
     @Test
     void addToFriend_ShouldThrowException_WhenUserNotFound() {
-        when(userStorage.findUserById(1L)).thenReturn(Optional.empty());
+        when(userStorage.findUserByIdOrThrow(1L)).thenThrow(new NoUserFoundException(""));
 
         assertThrows(NoUserFoundException.class, () ->
                 userService.addToFriend(1L, 2L)
         );
 
-        verify(userStorage).findUserById(1L);
-        verify(userStorage, never()).findUserById(2L);
+        verify(userStorage).findUserByIdOrThrow(1L);
+        verify(userStorage, never()).findUserByIdOrThrow(2L);
         verify(userStorage, never()).save(any());
     }
 
     @Test
     void addToFriend_ShouldThrowException_WhenFriendNotFound() {
-        when(userStorage.findUserById(1L)).thenReturn(Optional.of(user1));
-        when(userStorage.findUserById(2L)).thenReturn(Optional.empty());
+        when(userStorage.findUserByIdOrThrow(1L)).thenReturn(user1);
+        when(userStorage.findUserByIdOrThrow(2L)).thenThrow(new NoUserFoundException(""));
 
         assertThrows(NoUserFoundException.class, () ->
                 userService.addToFriend(1L, 2L)
         );
 
-        verify(userStorage).findUserById(1L);
-        verify(userStorage).findUserById(2L);
+        verify(userStorage).findUserByIdOrThrow(1L);
+        verify(userStorage).findUserByIdOrThrow(2L);
         verify(userStorage, never()).save(any());
     }
 
@@ -114,8 +114,8 @@ class UserServiceTest {
         user1.getFriends().add(2L);
         user2.getFriends().add(1L);
 
-        when(userStorage.findUserById(1L)).thenReturn(Optional.of(user1));
-        when(userStorage.findUserById(2L)).thenReturn(Optional.of(user2));
+        when(userStorage.findUserByIdOrThrow(1L)).thenReturn(user1);
+        when(userStorage.findUserByIdOrThrow(2L)).thenReturn(user2);
         when(userStorage.update(any(User.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -134,8 +134,8 @@ class UserServiceTest {
         user1.getFriends().add(2L);
         user2.getFriends().add(1L);
 
-        when(userStorage.findUserById(1L)).thenReturn(Optional.of(user1));
-        when(userStorage.findUserById(2L)).thenReturn(Optional.of(user2));
+        when(userStorage.findUserByIdOrThrow(1L)).thenReturn(user1);
+        when(userStorage.findUserByIdOrThrow(2L)).thenReturn(user2);
         when(userStorage.update(any(User.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -147,14 +147,14 @@ class UserServiceTest {
         assertEquals(0, user2.getFriends().size());
 
         verify(userStorage, times(2)).update(any(User.class));
-        verify(userStorage).findUserById(1L);
-        verify(userStorage).findUserById(2L);
+        verify(userStorage).findUserByIdOrThrow(1L);
+        verify(userStorage).findUserByIdOrThrow(2L);
     }
 
     @Test
     void removeFromFriends_ShouldDoNothing_WhenUsersAreNotFriends() {
-        when(userStorage.findUserById(1L)).thenReturn(Optional.of(user1));
-        when(userStorage.findUserById(2L)).thenReturn(Optional.of(user2));
+        when(userStorage.findUserByIdOrThrow(1L)).thenReturn(user1);
+        when(userStorage.findUserByIdOrThrow(2L)).thenReturn(user2);
         when(userStorage.update(any(User.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -170,14 +170,14 @@ class UserServiceTest {
 
     @Test
     void removeFromFriends_ShouldThrowException_WhenUserNotFound() {
-        when(userStorage.findUserById(1L)).thenReturn(Optional.empty());
+        when(userStorage.findUserByIdOrThrow(1L)).thenThrow(new NoUserFoundException(""));
 
         assertThrows(NoUserFoundException.class, () ->
                 userService.removeFromFriends(1L, 2L)
         );
 
-        verify(userStorage).findUserById(1L);
-        verify(userStorage, never()).findUserById(2L);
+        verify(userStorage).findUserByIdOrThrow(1L);
+        verify(userStorage, never()).findUserByIdOrThrow(2L);
         verify(userStorage, never()).save(any());
     }
 
@@ -186,9 +186,9 @@ class UserServiceTest {
         user1.getFriends().add(2L);
         user1.getFriends().add(3L);
 
-        when(userStorage.findUserById(1L)).thenReturn(Optional.of(user1));
-        when(userStorage.findUserById(2L)).thenReturn(Optional.of(user2));
-        when(userStorage.findUserById(3L)).thenReturn(Optional.of(user3));
+        when(userStorage.findUserByIdOrThrow(1L)).thenReturn(user1);
+        when(userStorage.findUserByIdOrThrow(2L)).thenReturn(user2);
+        when(userStorage.findUserByIdOrThrow(3L)).thenReturn(user3);
 
         Set<User> friends = userService.getUserFriends(1L);
 
@@ -196,31 +196,31 @@ class UserServiceTest {
         assertTrue(friends.contains(user2));
         assertTrue(friends.contains(user3));
 
-        verify(userStorage).findUserById(1L);
-        verify(userStorage).findUserById(2L);
-        verify(userStorage).findUserById(3L);
+        verify(userStorage).findUserByIdOrThrow(1L);
+        verify(userStorage).findUserByIdOrThrow(2L);
+        verify(userStorage).findUserByIdOrThrow(3L);
     }
 
     @Test
     void getUserFriends_ShouldReturnEmptySet_WhenUserHasNoFriends() {
-        when(userStorage.findUserById(1L)).thenReturn(Optional.of(user1));
+        when(userStorage.findUserByIdOrThrow(1L)).thenReturn(user1);
 
         Set<User> friends = userService.getUserFriends(1L);
 
         assertTrue(friends.isEmpty());
 
-        verify(userStorage).findUserById(1L);
+        verify(userStorage).findUserByIdOrThrow(1L);
     }
 
     @Test
     void getUserFriends_ShouldThrowException_WhenUserNotFound() {
-        when(userStorage.findUserById(1L)).thenReturn(Optional.empty());
+        when(userStorage.findUserByIdOrThrow(1L)).thenThrow(new NoUserFoundException(""));
 
         assertThrows(NoUserFoundException.class, () ->
                 userService.getUserFriends(1L)
         );
 
-        verify(userStorage).findUserById(1L);
+        verify(userStorage).findUserByIdOrThrow(1L);
     }
 
     @Test
@@ -230,18 +230,18 @@ class UserServiceTest {
         user2.getFriends().add(1L);
         user2.getFriends().add(3L);
 
-        when(userStorage.findUserById(1L)).thenReturn(Optional.of(user1));
-        when(userStorage.findUserById(2L)).thenReturn(Optional.of(user2));
-        when(userStorage.findUserById(3L)).thenReturn(Optional.of(user3));
+        when(userStorage.findUserByIdOrThrow(1L)).thenReturn(user1);
+        when(userStorage.findUserByIdOrThrow(2L)).thenReturn(user2);
+        when(userStorage.findUserByIdOrThrow(3L)).thenReturn(user3);
 
         Set<User> commonFriends = userService.getCommonFriends(1L, 2L);
 
         assertEquals(1, commonFriends.size());
         assertTrue(commonFriends.contains(user3));
 
-        verify(userStorage).findUserById(1L);
-        verify(userStorage).findUserById(2L);
-        verify(userStorage).findUserById(3L);
+        verify(userStorage).findUserByIdOrThrow(1L);
+        verify(userStorage).findUserByIdOrThrow(2L);
+        verify(userStorage).findUserByIdOrThrow(3L);
     }
 
     @Test
@@ -249,62 +249,62 @@ class UserServiceTest {
         user1.getFriends().add(2L);
         user2.getFriends().add(3L);
 
-        when(userStorage.findUserById(1L)).thenReturn(Optional.of(user1));
-        when(userStorage.findUserById(2L)).thenReturn(Optional.of(user2));
+        when(userStorage.findUserByIdOrThrow(1L)).thenReturn(user1);
+        when(userStorage.findUserByIdOrThrow(2L)).thenReturn(user2);
 
         Set<User> commonFriends = userService.getCommonFriends(1L, 2L);
 
         assertTrue(commonFriends.isEmpty());
 
-        verify(userStorage).findUserById(1L);
-        verify(userStorage).findUserById(2L);
-        verify(userStorage, never()).findUserById(3L);
+        verify(userStorage).findUserByIdOrThrow(1L);
+        verify(userStorage).findUserByIdOrThrow(2L);
+        verify(userStorage, never()).findUserByIdOrThrow(3L);
     }
 
     @Test
     void getCommonFriends_ShouldReturnEmptySet_WhenOneUserHasNoFriends() {
         user1.getFriends().add(2L);
 
-        when(userStorage.findUserById(1L)).thenReturn(Optional.of(user1));
-        when(userStorage.findUserById(2L)).thenReturn(Optional.of(user2));
+        when(userStorage.findUserByIdOrThrow(1L)).thenReturn(user1);
+        when(userStorage.findUserByIdOrThrow(2L)).thenReturn(user2);
 
         Set<User> commonFriends = userService.getCommonFriends(1L, 2L);
 
         assertTrue(commonFriends.isEmpty());
 
-        verify(userStorage).findUserById(1L);
-        verify(userStorage).findUserById(2L);
+        verify(userStorage).findUserByIdOrThrow(1L);
+        verify(userStorage).findUserByIdOrThrow(2L);
     }
 
     @Test
     void getCommonFriends_ShouldThrowException_WhenFirstUserNotFound() {
-        when(userStorage.findUserById(1L)).thenReturn(Optional.empty());
+        when(userStorage.findUserByIdOrThrow(1L)).thenThrow(new NoUserFoundException(""));
 
         assertThrows(NoUserFoundException.class, () ->
                 userService.getCommonFriends(1L, 2L)
         );
 
-        verify(userStorage).findUserById(1L);
-        verify(userStorage, never()).findUserById(2L);
+        verify(userStorage).findUserByIdOrThrow(1L);
+        verify(userStorage, never()).findUserByIdOrThrow(2L);
     }
 
     @Test
     void getCommonFriends_ShouldThrowException_WhenSecondUserNotFound() {
-        when(userStorage.findUserById(1L)).thenReturn(Optional.of(user1));
-        when(userStorage.findUserById(2L)).thenReturn(Optional.empty());
+        when(userStorage.findUserByIdOrThrow(1L)).thenReturn(user1);
+        when(userStorage.findUserByIdOrThrow(2L)).thenThrow(new NoUserFoundException(""));
 
         assertThrows(NoUserFoundException.class, () ->
                 userService.getCommonFriends(1L, 2L)
         );
 
-        verify(userStorage).findUserById(1L);
-        verify(userStorage).findUserById(2L);
+        verify(userStorage).findUserByIdOrThrow(1L);
+        verify(userStorage).findUserByIdOrThrow(2L);
     }
 
     @Test
     void addToFriend_ShouldReturnUpdatedUser_WhenFriendshipAdded() {
-        when(userStorage.findUserById(1L)).thenReturn(Optional.of(user1));
-        when(userStorage.findUserById(2L)).thenReturn(Optional.of(user2));
+        when(userStorage.findUserByIdOrThrow(1L)).thenReturn(user1);
+        when(userStorage.findUserByIdOrThrow(2L)).thenReturn(user2);
         when(userStorage.update(any(User.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -321,8 +321,8 @@ class UserServiceTest {
         user1.getFriends().add(2L);
         user2.getFriends().add(1L);
 
-        when(userStorage.findUserById(1L)).thenReturn(Optional.of(user1));
-        when(userStorage.findUserById(2L)).thenReturn(Optional.of(user2));
+        when(userStorage.findUserByIdOrThrow(1L)).thenReturn(user1);
+        when(userStorage.findUserByIdOrThrow(2L)).thenReturn(user2);
         when(userStorage.update(any(User.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 

@@ -30,6 +30,12 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
+    public User findUserByIdOrThrow(Long id) {
+        return findUserById(id)
+            .orElseThrow(() -> new NoUserFoundException("No user with id " + id + " found"));
+    }
+
+    @Override
     public User save(User user) {
         if (user.getId() == null) {
             log.info("User id is empty. Set new id: {}", userCurrentId);

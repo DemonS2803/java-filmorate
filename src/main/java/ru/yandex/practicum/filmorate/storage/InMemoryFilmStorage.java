@@ -33,6 +33,12 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
+    public Film findFilmByIdOrThrow(long id) {
+        return findFilmById(id)
+            .orElseThrow(() -> new NoFilmFoundException("No film with id " + id + " found"));
+    }
+
+    @Override
     public Film save(Film film) {
         if (film.getId() == null) {
             log.info("Film id is empty. Set new id: {}", filmCurrentId);
@@ -51,9 +57,6 @@ public class InMemoryFilmStorage implements FilmStorage {
     public Film update(Film film) {
         if (film.getId() == null) {
             throw new InvalidFilmDataException("Film id is empty. Failed to update film");
-        }
-        if (!films.containsKey(film.getId())) {
-            throw new NoFilmFoundException("Film with id " + film.getId() + " does not exist");
         }
 
         log.info("User updated film with id {}", film.getId());
