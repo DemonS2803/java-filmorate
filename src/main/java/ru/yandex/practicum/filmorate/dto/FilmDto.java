@@ -1,5 +1,9 @@
 package ru.yandex.practicum.filmorate.dto;
 
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Set;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
@@ -8,9 +12,6 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.Calendar;
-import java.util.Date;
 
 @Getter
 @Setter
@@ -27,6 +28,7 @@ public class FilmDto {
     @NotNull(message = "Продолжительность должна быть положительной")
     @Positive(message = "Продолжительность должна быть положительной")
     private Integer duration;
+    private Set<Long> likedByUsers;
 
     @AssertTrue(message = "Фильм выпущен не ранее 18.12.1895")
     private boolean isNotBeforeFirstFilm() {

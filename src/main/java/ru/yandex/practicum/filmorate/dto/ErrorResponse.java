@@ -1,13 +1,13 @@
 package ru.yandex.practicum.filmorate.dto;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 @Data
 @Builder
