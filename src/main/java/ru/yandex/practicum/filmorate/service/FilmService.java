@@ -7,9 +7,9 @@ import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import ru.yandex.practicum.filmorate.exceptions.NoFilmFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 @Slf4j
 @Service
@@ -17,7 +17,7 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 public class FilmService {
 
     private final FilmStorage filmStorage;
-    private final UserStorage userStorage;
+    private final UserService userService;
 
     public List<Film> getFilms() {
         log.debug("Get all films");
@@ -26,7 +26,12 @@ public class FilmService {
 
     public Film getFilmById(final long id) {
         log.debug("Get film by id: {}", id);
-        return filmStorage.findFilmByIdOrThrow(id);
+        return getFilmByIdOrThrow(id);
+    }
+
+    private Film getFilmByIdOrThrow(long id) {
+        return filmStorage.findFilmById(id)
+                .orElseThrow(() -> new NoFilmFoundException("No film with id " + id + " found"));
     }
 
     public Film createFilm(Film film) {
@@ -46,7 +51,7 @@ public class FilmService {
         log.info("Like film: {}", filmId);
         Film film = getFilmById(filmId);
         // check for user exists
-        userStorage.findUserByIdOrThrow(userId);
+        userService.getUserById(userId);
 
         film.getLikedByUsers().add(userId);
         film = filmStorage.update(film);
@@ -58,7 +63,7 @@ public class FilmService {
         log.info("Unlike film: {}", filmId);
         Film film = getFilmById(filmId);
         // check for user exists
-        userStorage.findUserByIdOrThrow(userId);
+        userService.getUserById(userId);
 
         film.getLikedByUsers().remove(userId);
         film = filmStorage.update(film);

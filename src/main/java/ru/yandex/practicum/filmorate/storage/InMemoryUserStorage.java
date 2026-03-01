@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
 import ru.yandex.practicum.filmorate.exceptions.InvalidUserDataException;
-import ru.yandex.practicum.filmorate.exceptions.NoUserFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
 @Slf4j
@@ -27,12 +26,6 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public Optional<User> findUserById(Long id) {
         return Optional.ofNullable(users.get(id));
-    }
-
-    @Override
-    public User findUserByIdOrThrow(Long id) {
-        return findUserById(id)
-            .orElseThrow(() -> new NoUserFoundException("No user with id " + id + " found"));
     }
 
     @Override
@@ -54,9 +47,6 @@ public class InMemoryUserStorage implements UserStorage {
     public User update(User user) {
         if (user.getId() == null) {
             throw new InvalidUserDataException("User id is empty. Failed to update user");
-        }
-        if (!users.containsKey(user.getId())) {
-            throw new NoUserFoundException("User with id " + user.getId() + " not found");
         }
 
         log.info("User updated user with id {}", user.getId());

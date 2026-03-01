@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import ru.yandex.practicum.filmorate.exceptions.InvalidUserDataException;
+import ru.yandex.practicum.filmorate.exceptions.NoUserFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -27,7 +28,12 @@ public class UserService {
 
     public User getUserById(long id) {
         log.debug("Get user by id: {}", id);
-        return userStorage.findUserByIdOrThrow(id);
+        return getUserByIdOrThrow(id);
+    }
+
+    private User getUserByIdOrThrow(Long id) {
+        return userStorage.findUserById(id)
+                .orElseThrow(() -> new NoUserFoundException("No user with id " + id + " found"));
     }
 
     public User createUser(User user) {
@@ -56,9 +62,7 @@ public class UserService {
         User user = getUserById(userId);
         User friend = getUserById(friendId);
 
-        if (Objects.equals(user.getId(), friend.getId())) {
-            throw new InvalidUserDataException("User can't make friends with himself");
-        }
+        checkNotEquals(user, friend, "User can't make friends with himself");
 
         user.getFriends().add(friendId);
         friend.getFriends().add(userId);
@@ -75,9 +79,7 @@ public class UserService {
         User user = getUserById(userId);
         User friend = getUserById(friendId);
 
-        if (Objects.equals(user.getId(), friend.getId())) {
-            throw new InvalidUserDataException("User can't remove himself from friends");
-        }
+        checkNotEquals(user, friend, "User can't remove himself from friends");
 
         user.getFriends().remove(friendId);
         friend.getFriends().remove(userId);
@@ -93,9 +95,7 @@ public class UserService {
         User user = getUserById(userId);
         User another = getUserById(anotherUserId);
 
-        if (Objects.equals(user.getId(), another.getId())) {
-            throw new InvalidUserDataException("User can't get common friends with himself");
-        }
+        checkNotEquals(user, another, "User can't get common friends with himself");
 
         Set<Long> commonFriends = user.getFriends();
         commonFriends.retainAll(another.getFriends());
@@ -103,6 +103,13 @@ public class UserService {
         return commonFriends.stream()
                 .map(this::getUserById)
                 .collect(Collectors.toSet());
+    }
+
+    private void checkNotEquals(User user, User friend, String message) {
+        if (Objects.equals(user.getId(), friend.getId())) {
+            throw new InvalidUserDataException(message);
+        }
+        // if more comparing reasons will be in future (why not)
     }
 
 }

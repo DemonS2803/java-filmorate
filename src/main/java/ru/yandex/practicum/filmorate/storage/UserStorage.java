@@ -11,8 +11,6 @@ public interface UserStorage {
 
     Optional<User> findUserById(Long id);
 
-    User findUserByIdOrThrow(Long id);
-
     User save(User user);
 
     User update(User user);

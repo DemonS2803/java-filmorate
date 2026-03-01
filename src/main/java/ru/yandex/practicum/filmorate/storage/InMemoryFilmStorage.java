@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
 import ru.yandex.practicum.filmorate.exceptions.InvalidFilmDataException;
-import ru.yandex.practicum.filmorate.exceptions.NoFilmFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 @Slf4j
@@ -30,12 +29,6 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public Optional<Film> findFilmById(long id) {
         return Optional.ofNullable(films.get(id));
-    }
-
-    @Override
-    public Film findFilmByIdOrThrow(long id) {
-        return findFilmById(id)
-            .orElseThrow(() -> new NoFilmFoundException("No film with id " + id + " found"));
     }
 
     @Override
