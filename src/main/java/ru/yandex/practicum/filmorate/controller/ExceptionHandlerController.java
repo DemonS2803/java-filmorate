@@ -9,10 +9,12 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import ru.yandex.practicum.filmorate.dto.ErrorResponse;
 import ru.yandex.practicum.filmorate.exceptions.InvalidFilmDataException;
 import ru.yandex.practicum.filmorate.exceptions.InvalidUserDataException;
 import ru.yandex.practicum.filmorate.exceptions.NoFilmFoundException;
+import ru.yandex.practicum.filmorate.exceptions.NoFilmRatingFoundException;
 import ru.yandex.practicum.filmorate.exceptions.NoUserFoundException;
 
 @Slf4j
@@ -73,6 +75,21 @@ public class ExceptionHandlerController {
                 new ErrorResponse(400, "Invalid film data", e.getMessage()),
                 HttpStatus.BAD_REQUEST
         );
+    }
+
+    @ExceptionHandler(NoFilmRatingFoundException.class)
+    public ResponseEntity<?> handleNoFilmRatingFoundException(NoFilmRatingFoundException e) {
+        log.warn(e.getMessage());
+        return new ResponseEntity<>(
+                new ErrorResponse(404, "Failed to find film rating", e.getMessage()),
+                HttpStatus.NOT_FOUND
+        );
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<?> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException e) {
+        log.error("Failed to validate incoming arguments", e);
+        return new ResponseEntity<>(new ErrorResponse(404, "Bad Request", e.getMessage()), HttpStatus.BAD_REQUEST);
     }
 
 }
