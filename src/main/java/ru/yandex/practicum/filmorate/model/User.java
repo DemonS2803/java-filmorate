@@ -26,22 +26,4 @@ public class User {
     Date birthday;
     Set<Long> friends;
 
-    public static User of(UserDto dto) {
-        User user = new User();
-        user.id = dto.getId();
-        user.email = dto.getEmail();
-        user.login = dto.getLogin();
-        if (dto.getName() != null) {
-            user.name = dto.getName();
-        } else {
-            user.name = dto.getLogin();
-        }
-        user.birthday = dto.getBirthday();
-        user.friends = new HashSet<>();
-        if (dto.getFriends() != null && !dto.getFriends().isEmpty()) {
-            user.friends.addAll(dto.getFriends());
-        }
-        return user;
-    }
-
 }

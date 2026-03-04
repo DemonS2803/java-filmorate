@@ -2,6 +2,8 @@ package ru.yandex.practicum.filmorate.controller;
 
 import java.util.Collection;
 
+import jakarta.validation.Valid;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -14,10 +16,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
+import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
@@ -38,7 +40,7 @@ public class FilmController {
     @PostMapping
     public ResponseEntity<Film> addFilm(@Valid @RequestBody FilmDto incomingFilmDto) {
         log.info("Create film: {}", incomingFilmDto);
-        Film film = filmService.createFilm(Film.of(incomingFilmDto));
+        Film film = filmService.createFilm(FilmMapper.mapToFilm(incomingFilmDto));
 
         return new ResponseEntity<>(film, HttpStatus.CREATED);
     }
@@ -46,7 +48,7 @@ public class FilmController {
     @PutMapping
     public ResponseEntity<Film> updateFilm(@Valid @RequestBody FilmDto incomingFilmDto) {
         log.info("Update film: {}", incomingFilmDto);
-        Film film = filmService.updateFilm(Film.of(incomingFilmDto));
+        Film film = filmService.updateFilm(FilmMapper.mapToFilm(incomingFilmDto));
 
         return new ResponseEntity<>(film, HttpStatus.OK);
     }

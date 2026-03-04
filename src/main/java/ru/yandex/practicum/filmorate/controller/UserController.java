@@ -3,6 +3,8 @@ package ru.yandex.practicum.filmorate.controller;
 import java.util.Collection;
 import java.util.Set;
 
+import jakarta.validation.Valid;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -14,10 +16,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import ru.yandex.practicum.filmorate.dto.UserDto;
+import ru.yandex.practicum.filmorate.mapper.UserMapper;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -39,7 +41,7 @@ public class UserController {
     @PostMapping
     public ResponseEntity<User> addUser(@Valid @RequestBody UserDto incomingUserDto) {
         log.info("Add user: {} request", incomingUserDto);
-        User user = userService.createUser(User.of(incomingUserDto));
+        User user = userService.createUser(UserMapper.mapToUser(incomingUserDto));
 
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
@@ -47,7 +49,7 @@ public class UserController {
     @PutMapping
     public ResponseEntity<?> updateUser(@Valid @RequestBody UserDto incomingUserDto) {
         log.info("Update user {} request", incomingUserDto);
-        User user = userService.updateUser(User.of(incomingUserDto));
+        User user = userService.updateUser(UserMapper.mapToUser(incomingUserDto));
 
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
