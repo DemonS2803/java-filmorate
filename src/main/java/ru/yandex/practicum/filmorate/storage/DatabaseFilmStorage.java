@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.exceptions.InvalidFilmDataException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 @Primary
@@ -60,6 +61,9 @@ public class DatabaseFilmStorage extends DatabaseStorage<Film> implements FilmSt
 
     @Override
     public Film update(Film film) {
+        if (film.getId() == null) {
+            throw new InvalidFilmDataException("Film id is null. Failed to update film");
+        }
         update(UPDATE_FILM_QUERY,
                 film.getName(),
                 film.getDescription(),

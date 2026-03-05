@@ -30,3 +30,8 @@ create table if not exists film_likes (
     foreign key (film_id) references films(id),
     foreign key (user_id) references users(id)
 );
+
+create table if not exists film_genre (
+    id bigserial primary key,
+    name varchar(100) not null
+);

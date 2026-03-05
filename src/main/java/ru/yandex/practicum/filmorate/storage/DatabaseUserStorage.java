@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.exceptions.InvalidUserDataException;
 import ru.yandex.practicum.filmorate.model.User;
 
 @Primary
@@ -58,6 +59,10 @@ public class DatabaseUserStorage extends DatabaseStorage<User> implements UserSt
 
     @Override
     public User update(User user) {
+        if (user.getId() == null) {
+            throw new InvalidUserDataException("User id is null. Failed to update user");
+        }
+
         update(UPDATE_USER_QUERY,
             user.getEmail(),
             user.getLogin(),

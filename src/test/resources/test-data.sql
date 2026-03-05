@@ -30,3 +30,8 @@ insert into film_likes (film_id, user_id) values
     (1, 1),
     (1, 2),
     (2, 1);
+
+insert into film_genre (name) values
+    ('Комедия'),
+    ('Драма'),
+    ('Боевик');

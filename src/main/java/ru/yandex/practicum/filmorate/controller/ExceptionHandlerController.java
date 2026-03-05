@@ -14,6 +14,7 @@ import ru.yandex.practicum.filmorate.dto.ErrorResponse;
 import ru.yandex.practicum.filmorate.exceptions.InvalidFilmDataException;
 import ru.yandex.practicum.filmorate.exceptions.InvalidUserDataException;
 import ru.yandex.practicum.filmorate.exceptions.NoFilmFoundException;
+import ru.yandex.practicum.filmorate.exceptions.NoFilmGenreFoundException;
 import ru.yandex.practicum.filmorate.exceptions.NoFilmRatingFoundException;
 import ru.yandex.practicum.filmorate.exceptions.NoUserFoundException;
 
@@ -82,6 +83,15 @@ public class ExceptionHandlerController {
         log.warn(e.getMessage());
         return new ResponseEntity<>(
                 new ErrorResponse(404, "Failed to find film rating", e.getMessage()),
+                HttpStatus.NOT_FOUND
+        );
+    }
+
+    @ExceptionHandler(NoFilmGenreFoundException.class)
+    public ResponseEntity<?> handleNoFilmGenreFoundException(NoFilmGenreFoundException e) {
+        log.warn(e.getMessage());
+        return new ResponseEntity<>(
+                new ErrorResponse(404, "Failed to find film genre", e.getMessage()),
                 HttpStatus.NOT_FOUND
         );
     }
