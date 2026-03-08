@@ -32,23 +32,29 @@ public class FilmController {
     private final FilmService filmService;
 
     @GetMapping
-    public Collection<Film> getFilms() {
+    public Collection<FilmDto> getFilms() {
         log.debug("Get all films info");
         return filmService.getFilms();
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<FilmDto> getFilmById(@PathVariable("id") int id) {
+        FilmDto film = filmService.getFilmById(id);
+        return new ResponseEntity<>(film, HttpStatus.OK);
+    }
+
     @PostMapping
-    public ResponseEntity<Film> addFilm(@Valid @RequestBody FilmDto incomingFilmDto) {
+    public ResponseEntity<FilmDto> addFilm(@Valid @RequestBody FilmDto incomingFilmDto) {
         log.info("Create film: {}", incomingFilmDto);
-        Film film = filmService.createFilm(FilmMapper.mapToFilm(incomingFilmDto));
+        FilmDto film = filmService.createFilm(FilmMapper.mapToFilm(incomingFilmDto));
 
         return new ResponseEntity<>(film, HttpStatus.CREATED);
     }
 
     @PutMapping
-    public ResponseEntity<Film> updateFilm(@Valid @RequestBody FilmDto incomingFilmDto) {
+    public ResponseEntity<FilmDto> updateFilm(@Valid @RequestBody FilmDto incomingFilmDto) {
         log.info("Update film: {}", incomingFilmDto);
-        Film film = filmService.updateFilm(FilmMapper.mapToFilm(incomingFilmDto));
+        FilmDto film = filmService.updateFilm(FilmMapper.mapToFilm(incomingFilmDto));
 
         return new ResponseEntity<>(film, HttpStatus.OK);
     }

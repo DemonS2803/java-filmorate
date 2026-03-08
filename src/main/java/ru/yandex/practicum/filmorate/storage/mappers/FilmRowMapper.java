@@ -3,9 +3,11 @@ package ru.yandex.practicum.filmorate.storage.mappers;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.FilmRating;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.HashSet;
 
@@ -19,13 +21,15 @@ public class FilmRowMapper implements RowMapper<Film> {
         film.setName(rs.getString("name"));
         film.setDescription(rs.getString("description"));
 
-        Date releaseDate = rs.getDate("release_date");
+        LocalDate releaseDate = rs.getDate("release_date").toLocalDate();
         if (releaseDate != null) {
-            film.setReleaseDate(new java.util.Date(releaseDate.getTime()));
+            film.setReleaseDate(releaseDate);
         }
 
         film.setDuration(rs.getInt("duration"));
         film.setLikedByUsers(new HashSet<>());
+        film.setRating(FilmRating.valueOf(rs.getInt("rating")));
+        film.setGenres(new HashSet<>());
 
         return film;
     }

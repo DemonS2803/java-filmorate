@@ -11,7 +11,7 @@ import ru.yandex.practicum.filmorate.exceptions.InvalidFilmDataException;
 import ru.yandex.practicum.filmorate.model.FilmGenre;
 
 @Slf4j
-@Repository
+@Repository("databaseFilmGenreStorage")
 public class DatabaseFilmGenreStorage extends DatabaseStorage<FilmGenre> implements FilmGenreStorage {
 
     private static final String FIND_ALL_QUERY = "SELECT id, name FROM film_genre ORDER BY id";

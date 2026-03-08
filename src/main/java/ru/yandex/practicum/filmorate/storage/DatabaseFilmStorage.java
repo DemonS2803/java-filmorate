@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage;
 
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -20,14 +21,17 @@ import ru.yandex.practicum.filmorate.model.Film;
 public class DatabaseFilmStorage extends DatabaseStorage<Film> implements FilmStorage {
     private static final String FIND_ALL_QUERY = "SELECT * FROM films";
     private static final String FIND_FILM_BY_ID_QUERY = "SELECT * FROM films WHERE id = ?";
-    private static final String SAVE_FILM_QUERY = "INSERT INTO films (name, description, release_date, duration) VALUES (?, ?, ?, ?)";
-    private static final String UPDATE_FILM_QUERY = "UPDATE films SET name = ?, description = ?, release_date = ?, duration = ? WHERE id = ?";
+    private static final String SAVE_FILM_QUERY = "INSERT INTO films (name, description, release_date, duration, rating) VALUES (?, ?, ?, ?, ?)";
+    private static final String UPDATE_FILM_QUERY = "UPDATE films SET name = ?, description = ?, release_date = ?, duration = ?, rating = ? WHERE id = ?";
     private static final String DELETE_FILM_QUERY = "DELETE FROM films WHERE id = ?";
     private static final String FIND_LIKED_BY_FOR_FILM_QUERY = "SELECT user_id FROM film_likes WHERE film_id = ?";
     private static final String LIKE_FILM_QUERY = "INSERT INTO film_likes (film_id, user_id) VALUES (?, ?)";
     private static final String CLEAR_FILM_LIKES_QUERY = "DELETE FROM film_likes WHERE film_id = ?";
     private static final String FIND_MOST_POPULAR_FILMS_QUERY = "SELECT f.*, COUNT(fl.user_id) as like_count FROM films f" +
             " LEFT JOIN film_likes fl ON f.id = fl.film_id GROUP BY f.id ORDER BY like_count DESC LIMIT ?";
+    private static final String FIND_GENRES_BY_FILM_ID_QUERY = "SELECT genre_id FROM film_genres_mapper WHERE film_id = ?";
+    private static final String SAVE_GENRES_FOR_FILM_QUERY = "INSERT INTO film_genres_mapper (film_id, genre_id) VALUES (?, ?)";
+    private static final String CLEAR_GENRES_FOR_FILM_QUERY = "DELETE FROM film_genres_mapper WHERE film_id = ?";
 
     @Autowired
     public DatabaseFilmStorage(JdbcTemplate jdbc, RowMapper<Film> mapper) {
@@ -37,14 +41,14 @@ public class DatabaseFilmStorage extends DatabaseStorage<Film> implements FilmSt
     @Override
     public List<Film> findAll() {
         return findMany(FIND_ALL_QUERY).stream()
-                .map(this::loadFilmLikes)
+                .map(this::loadAdditionalFields)
                 .collect(Collectors.toList());
     }
 
     @Override
     public Optional<Film> findFilmById(long id) {
         return findOne(FIND_FILM_BY_ID_QUERY, id)
-                .map(this::loadFilmLikes);
+                .map(this::loadAdditionalFields);
     }
 
     @Override
@@ -53,8 +57,10 @@ public class DatabaseFilmStorage extends DatabaseStorage<Film> implements FilmSt
                 film.getName(),
                 film.getDescription(),
                 film.getReleaseDate(),
-                film.getDuration()
+                film.getDuration(),
+                film.getRating().getId()
         );
+        saveFilmGenres(id, film.getGenres());
         film.setId(id);
         return film;
     }
@@ -67,31 +73,47 @@ public class DatabaseFilmStorage extends DatabaseStorage<Film> implements FilmSt
         update(UPDATE_FILM_QUERY,
                 film.getName(),
                 film.getDescription(),
-                film.getReleaseDate() != null ? new Date(film.getReleaseDate().getTime()) : null,
+                film.getReleaseDate() != null ? new Date(film.getReleaseDate().atStartOfDay(ZoneId.systemDefault()).toEpochSecond()) : null,
                 film.getDuration(),
+                film.getRating().getId(),
                 film.getId()
         );
-
         updateFilmLikes(film.getId(), film.getLikedByUsers());
+        updateFilmGenres(film.getId(), film.getGenres());
 
         return film;
     }
 
     @Override
     public boolean delete(long id) {
+        // clear film_genres_mapper table for this film
+        updateFilmGenres(id, new HashSet<>());
         return delete(DELETE_FILM_QUERY, id);
     }
 
     @Override
     public List<Film> findMostPopularFilms(Integer size) {
         return findMany(FIND_MOST_POPULAR_FILMS_QUERY, size).stream()
-                .map(this::loadFilmLikes)
+                .map(this::loadAdditionalFields)
                 .collect(Collectors.toList());
+    }
+
+    private Film loadAdditionalFields(Film film) {
+        film = loadFilmLikes(film);
+        film = loadFilmGenres(film);
+        return film;
     }
 
     private Film loadFilmLikes(Film film) {
         Set<Long> likes = new HashSet<>(jdbc.queryForList(FIND_LIKED_BY_FOR_FILM_QUERY, Long.class, film.getId()));
         film.setLikedByUsers(likes);
+        return film;
+    }
+
+
+    private Film loadFilmGenres(Film film) {
+        Set<Long> genres = new HashSet<>(jdbc.queryForList(FIND_GENRES_BY_FILM_ID_QUERY, Long.class, film.getId()));
+        film.setGenres(genres);
         return film;
     }
 
@@ -112,4 +134,24 @@ public class DatabaseFilmStorage extends DatabaseStorage<Film> implements FilmSt
             saveFilmLikes(filmId, likedByUserIds);
         }
     }
+
+    private void saveFilmGenres(Long filmId, Set<Long> genres) {
+        if (genres == null || genres.isEmpty()) {
+            return;
+        }
+
+        for (Long genreId : genres) {
+            jdbc.update(SAVE_GENRES_FOR_FILM_QUERY, filmId, genreId);
+        }
+    }
+
+    private void updateFilmGenres(Long filmId, Set<Long> genres) {
+        jdbc.update(CLEAR_GENRES_FOR_FILM_QUERY, filmId);
+
+        if (genres != null && !genres.isEmpty()) {
+            saveFilmGenres(filmId, genres);
+        }
+    }
+
+
 }

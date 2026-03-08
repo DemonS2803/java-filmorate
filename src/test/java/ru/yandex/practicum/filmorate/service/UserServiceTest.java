@@ -71,6 +71,7 @@ class UserServiceTest {
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
         User result = userService.addToFriend(1L, 2L);
+        result = userService.addToFriend(2L, 1L);
 
         assertTrue(user1.getFriends().contains(2L));
         assertTrue(user2.getFriends().contains(1L));
@@ -78,8 +79,8 @@ class UserServiceTest {
         assertEquals(1, user2.getFriends().size());
 
         verify(userStorage, times(2)).update(any(User.class));
-        verify(userStorage).findUserById(1L);
-        verify(userStorage).findUserById(2L);
+        verify(userStorage, times(2)).findUserById(1L);
+        verify(userStorage, times(2)).findUserById(2L);
     }
 
     @Test
@@ -120,6 +121,7 @@ class UserServiceTest {
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
         User result = userService.addToFriend(1L, 2L);
+        result = userService.addToFriend(2L, 1L);
 
         assertTrue(user1.getFriends().contains(2L));
         assertTrue(user2.getFriends().contains(1L));
@@ -127,6 +129,26 @@ class UserServiceTest {
         assertEquals(1, user2.getFriends().size());
 
         verify(userStorage, times(2)).update(any(User.class));
+    }
+
+
+    @Test
+    void addToFriend_ShouldNotBeBidirectedFriendship() {
+        user1.getFriends().add(2L);
+
+        when(userStorage.findUserById(1L)).thenReturn(Optional.ofNullable(user1));
+        when(userStorage.findUserById(2L)).thenReturn(Optional.ofNullable(user2));
+        when(userStorage.update(any(User.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        User result = userService.addToFriend(1L, 2L);
+
+        assertTrue(user1.getFriends().contains(2L));
+        assertFalse(user2.getFriends().contains(1L));
+        assertEquals(1, user1.getFriends().size());
+        assertEquals(0, user2.getFriends().size());
+
+        verify(userStorage, times(1)).update(any(User.class));
     }
 
     @Test
@@ -140,6 +162,7 @@ class UserServiceTest {
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
         User result = userService.removeFromFriends(1L, 2L);
+        result = userService.removeFromFriends(2L, 1L);
 
         assertFalse(user1.getFriends().contains(2L));
         assertFalse(user2.getFriends().contains(1L));
@@ -147,8 +170,8 @@ class UserServiceTest {
         assertEquals(0, user2.getFriends().size());
 
         verify(userStorage, times(2)).update(any(User.class));
-        verify(userStorage).findUserById(1L);
-        verify(userStorage).findUserById(2L);
+        verify(userStorage, times(2)).findUserById(1L);
+        verify(userStorage, times(2)).findUserById(2L);
     }
 
     @Test
@@ -159,6 +182,7 @@ class UserServiceTest {
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
         User result = userService.removeFromFriends(1L, 2L);
+        result = userService.removeFromFriends(2L, 1L);
 
         assertFalse(user1.getFriends().contains(2L));
         assertFalse(user2.getFriends().contains(1L));

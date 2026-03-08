@@ -19,7 +19,6 @@ import ru.yandex.practicum.filmorate.exceptions.NoFilmRatingFoundException;
 import ru.yandex.practicum.filmorate.exceptions.NoUserFoundException;
 
 @Slf4j
-@Order(1)
 @AllArgsConstructor
 @RestControllerAdvice
 public class ExceptionHandlerController {
@@ -78,6 +77,7 @@ public class ExceptionHandlerController {
         );
     }
 
+    @Order(100)
     @ExceptionHandler(NoFilmRatingFoundException.class)
     public ResponseEntity<?> handleNoFilmRatingFoundException(NoFilmRatingFoundException e) {
         log.warn(e.getMessage());

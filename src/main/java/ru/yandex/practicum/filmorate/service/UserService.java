@@ -65,10 +65,8 @@ public class UserService {
         checkNotEquals(user, friend, "User can't make friends with himself");
 
         user.getFriends().add(friendId);
-        friend.getFriends().add(userId);
 
         user = userStorage.update(user);
-        userStorage.update(friend);
 
         return user;
     }
@@ -82,10 +80,8 @@ public class UserService {
         checkNotEquals(user, friend, "User can't remove himself from friends");
 
         user.getFriends().remove(friendId);
-        friend.getFriends().remove(userId);
 
         user = userStorage.update(user);
-        userStorage.update(friend);
 
         return user;
     }

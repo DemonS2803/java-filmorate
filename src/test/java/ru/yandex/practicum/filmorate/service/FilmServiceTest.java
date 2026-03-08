@@ -45,12 +45,11 @@ class FilmServiceTest {
     private User user1;
     private User user2;
     private User user3;
-    private Date releaseDate;
+    private LocalDate releaseDate;
 
     @BeforeEach
     void setUp() {
-        LocalDate localDate = LocalDate.of(2020, 1, 1);
-        releaseDate = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        releaseDate = LocalDate.of(2020, 1, 1);
 
         film1 = new Film();
         film1.setId(1L);

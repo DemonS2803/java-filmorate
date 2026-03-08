@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -21,8 +22,10 @@ public class Film {
     String name;
     String description;
     @JsonFormat(pattern = "yyyy-MM-dd")
-    Date releaseDate;
+    LocalDate releaseDate;
     Integer duration;
     Set<Long> likedByUsers = new HashSet<>();
+    FilmRating rating;
+    Set<Long> genres;
 
 }

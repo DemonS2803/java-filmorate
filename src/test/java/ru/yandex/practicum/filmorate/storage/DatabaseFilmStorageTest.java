@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -14,6 +15,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.FilmRating;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -28,7 +30,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class DatabaseFilmStorageTest {
 
-    @Autowired
     private final DatabaseFilmStorage filmStorage;
 
     private Film testFilm;
@@ -38,9 +39,11 @@ public class DatabaseFilmStorageTest {
         testFilm = new Film();
         testFilm.setName("Test Film");
         testFilm.setDescription("Test Description");
-        testFilm.setReleaseDate(new Date(120, 0, 1)); // 2020-01-01
+        testFilm.setReleaseDate(LocalDate.of(120, 1, 1)); // 2020-01-01
         testFilm.setDuration(120);
         testFilm.setLikedByUsers(new HashSet<>());
+        testFilm.setRating(FilmRating.PG_13);
+        testFilm.setGenres(Set.of(1L, 3L));
     }
 
     @Test
@@ -149,8 +152,10 @@ public class DatabaseFilmStorageTest {
             Film film = new Film();
             film.setName("Film " + i);
             film.setDescription("Description " + i);
-            film.setReleaseDate(new Date());
+            film.setReleaseDate(LocalDate.now());
             film.setDuration(100 + i);
+            film.setRating(FilmRating.PG_13);
+            film.setGenres(new HashSet<>());
             filmStorage.save(film);
         }
 

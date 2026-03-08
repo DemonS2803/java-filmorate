@@ -9,16 +9,18 @@ import ru.yandex.practicum.filmorate.model.FilmRating;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @Service
 public class FilmRatingService {
 
-    public static final String FILM_RATING_LOCALE = "ru";
+    public static final String FILM_RATING_LOCALE = "en";
 
     public List<FilmRatingDto> getAllFilmRatings() {
         log.debug("Get all film ratings");
         return Arrays.stream(FilmRating.values())
+                .filter(Objects::nonNull)
                 .map(rating -> FilmRatingMapper.toDto(rating, FILM_RATING_LOCALE))
                 .toList();
     }
@@ -26,12 +28,12 @@ public class FilmRatingService {
     public FilmRatingDto getFilmRatingById(final int id) {
         log.debug("Get film rating by id: {}", id);
 
+        FilmRating rating = FilmRating.valueOf(id);
         // check id > 5 analogue
-        if (FilmRating.valueOf(id) == null) {
+        if (rating == null) {
             log.error("Invalid film rating id: {}", id);
             throw new NoFilmRatingFoundException("No film rating with id " + id);
         }
-        FilmRating rating = FilmRating.valueOf(id);
         return FilmRatingMapper.toDto(rating, FILM_RATING_LOCALE);
     }
 

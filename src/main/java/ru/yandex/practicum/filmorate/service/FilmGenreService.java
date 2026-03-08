@@ -6,11 +6,14 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dto.FilmGenreDto;
+import ru.yandex.practicum.filmorate.exceptions.InvalidFilmGenreDataException;
 import ru.yandex.practicum.filmorate.exceptions.NoFilmGenreFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmGenreMapper;
 import ru.yandex.practicum.filmorate.storage.FilmGenreStorage;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -26,7 +29,16 @@ public class FilmGenreService {
                 .collect(Collectors.toList());
     }
 
-    public FilmGenreDto getFilmGenreById(final int id) {
+    public List<FilmGenreDto> getFilmGenresByIds(Set<Long> ids) {
+        log.info("getFilmGenresByIds ids: {}", ids);
+        List<FilmGenreDto> dtos = ids.stream().map(this::getFilmGenreByIdOrThrow)
+                .sorted(Comparator.comparing(FilmGenreDto::getId))
+                .collect(Collectors.toList());
+        log.info("getFilmGenresByIds to return: {}", dtos);
+        return dtos;
+    }
+
+    public FilmGenreDto getFilmGenreById(long id) {
         return getFilmGenreByIdOrThrow(id);
     }
 

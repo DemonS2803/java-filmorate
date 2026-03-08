@@ -2,13 +2,22 @@ package ru.yandex.practicum.filmorate.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+import org.springframework.boot.autoconfigure.context.ConfigurationPropertiesAutoConfiguration;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import ru.yandex.practicum.filmorate.dto.FilmDto;
+import ru.yandex.practicum.filmorate.dto.FilmGenreDto;
 import ru.yandex.practicum.filmorate.exceptions.NoFilmFoundException;
+import ru.yandex.practicum.filmorate.exceptions.NoFilmRatingFoundException;
+import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.FilmGenre;
+import ru.yandex.practicum.filmorate.model.FilmRating;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 @Slf4j
@@ -18,15 +27,17 @@ public class FilmService {
 
     private final FilmStorage filmStorage;
     private final UserService userService;
+    private final FilmGenreService filmGenreService;
+    private final ConfigurationPropertiesAutoConfiguration configurationPropertiesAutoConfiguration;
 
-    public List<Film> getFilms() {
+    public List<FilmDto> getFilms() {
         log.debug("Get all films");
-        return filmStorage.findAll();
+        return filmStorage.findAll().stream().map(this::convertToDto).toList();
     }
 
-    public Film getFilmById(final long id) {
+    public FilmDto getFilmById(final long id) {
         log.debug("Get film by id: {}", id);
-        return getFilmByIdOrThrow(id);
+        return convertToDto(getFilmByIdOrThrow(id));
     }
 
     private Film getFilmByIdOrThrow(long id) {
@@ -34,22 +45,32 @@ public class FilmService {
                 .orElseThrow(() -> new NoFilmFoundException("No film with id " + id + " found"));
     }
 
-    public Film createFilm(Film film) {
+    public FilmDto createFilm(Film film) {
         log.info("Create film: {}", film);
-        return filmStorage.save(film);
+        // validations
+        checkFilmGenresExists(film);
+        checkFilmRatingValid(film);
+
+        Film savedFilm = filmStorage.save(film);
+
+        return convertToDto(savedFilm);
     }
 
-    public Film updateFilm(Film film) {
+    public FilmDto updateFilm(Film film) {
         // check for film exists
         getFilmById(film.getId());
+        // validations
+        checkFilmGenresExists(film);
+        checkFilmRatingValid(film);
 
         log.info("Update film: {}", film);
-        return filmStorage.update(film);
+        Film updatedFilm = filmStorage.update(film);
+        return convertToDto(updatedFilm);
     }
 
     public Film likeFilm(Long userId, Long filmId) {
         log.info("Like film: {}", filmId);
-        Film film = getFilmById(filmId);
+        Film film = getFilmByIdOrThrow(filmId);
         // check for user exists
         userService.getUserById(userId);
 
@@ -61,7 +82,7 @@ public class FilmService {
 
     public Film unlikeFilm(Long userId, Long filmId) {
         log.info("Unlike film: {}", filmId);
-        Film film = getFilmById(filmId);
+        Film film = getFilmByIdOrThrow(filmId);
         // check for user exists
         userService.getUserById(userId);
 
@@ -78,6 +99,34 @@ public class FilmService {
             return new ArrayList<>();
         }
         return filmStorage.findMostPopularFilms(count);
+    }
+
+    private FilmDto convertToDto(Film film) {
+        FilmDto dto = FilmMapper.mapToFilmDto(film);
+        loadFilmGenresToDto(dto, film);
+        return dto;
+    }
+
+    private void checkFilmGenresExists(Film film) {
+        // will throw exception if any not exists
+        if (film.getGenres() != null && !film.getGenres().isEmpty()) {
+            filmGenreService.getFilmGenresByIds(film.getGenres());
+        }
+    }
+
+    private void checkFilmRatingValid(Film film) {
+        if (film.getRating() == null) {
+            throw new NoFilmRatingFoundException("No film rating found");
+        }
+        if (FilmRating.valueOf(film.getRating().getId()) == null) {
+            throw new NoFilmRatingFoundException("No Film rating found for id: " + film.getRating().getId());
+        }
+    }
+
+    private void loadFilmGenresToDto(FilmDto dto, Film film) {
+        List<FilmGenreDto> filmGenres = filmGenreService.getFilmGenresByIds(film.getGenres());
+        log.info("Load film genres to dto: {}", filmGenres);
+        dto.setGenres(filmGenres);
     }
 
 }

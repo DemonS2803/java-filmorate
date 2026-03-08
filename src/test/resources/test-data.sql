@@ -1,4 +1,5 @@
 delete from film_likes;
+delete from film_genres_mapper;
 delete from user_friends;
 delete from users;
 delete from films;
@@ -34,4 +35,12 @@ insert into film_likes (film_id, user_id) values
 insert into film_genre (name) values
     ('Комедия'),
     ('Драма'),
-    ('Боевик');
+    ('Боевик'),
+    ('Триллер'),
+    ('Фентези'),
+    ('Научпоп');
+
+insert into film_genres_mapper (film_id, genre_id) values
+    (1, 1),
+    (2, 1),
+    (2, 2);

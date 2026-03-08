@@ -119,7 +119,7 @@ public class DatabaseFilmGenreStorageTest {
     void crudOperations_ShouldWorkInSequence() {
         FilmGenre created = genreStorage.save(testGenre);
         assertThat(created.getId()).isNotNull();
-        Long id = created.getId();
+        long id = created.getId();
 
         Optional<FilmGenre> found = genreStorage.findFilmGenreById(id);
         assertThat(found).isPresent();

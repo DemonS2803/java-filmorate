@@ -1,3 +1,16 @@
+-- for postman tests passing only
+-- delete from film_likes;
+-- delete from film_genres_mapper;
+-- delete from user_friends;
+-- delete from users;
+-- delete from films;
+
+drop table film_likes if exists;
+drop table film_genres_mapper if exists;
+drop table film_genre if exists;
+drop table user_friends if exists;
+drop table users if exists;
+drop table films if exists;
 
 create table if not exists users (
     id bigserial primary key,
@@ -12,7 +25,8 @@ create table if not exists films (
     name varchar(255) not null,
     description varchar(200),
     release_date date,
-    duration int check (duration > 0)
+    duration int check (duration > 0),
+    rating int
 );
 
 create table if not exists user_friends (
@@ -35,3 +49,11 @@ create table if not exists film_genre (
     id bigserial primary key,
     name varchar(100) not null
 );
+
+create table if not exists film_genres_mapper (
+    film_id bigint not null,
+    genre_id bigint not null,
+    primary key (film_id, genre_id),
+    foreign key (film_id) references films(id),
+    foreign key (genre_id) references film_genre(id)
+)

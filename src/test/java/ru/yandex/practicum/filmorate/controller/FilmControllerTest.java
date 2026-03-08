@@ -1,8 +1,12 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -15,12 +19,18 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
+import ru.yandex.practicum.filmorate.dto.FilmRatingDto;
+import ru.yandex.practicum.filmorate.mapper.FilmMapper;
+import ru.yandex.practicum.filmorate.mapper.FilmRatingMapper;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.FilmRating;
+import ru.yandex.practicum.filmorate.service.FilmRatingService;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import static org.hamcrest.Matchers.hasSize;
@@ -47,7 +57,7 @@ public class FilmControllerTest {
 
     private FilmDto validFilmDto;
     private Film validFilm;
-    private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+    private final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     @BeforeEach
     void setUp() throws Exception {
@@ -55,15 +65,19 @@ public class FilmControllerTest {
         validFilmDto.setId(1L);
         validFilmDto.setName("film");
         validFilmDto.setDescription("description");
-        validFilmDto.setReleaseDate(dateFormat.parse("2000-01-01"));
+        validFilmDto.setReleaseDate(LocalDate.parse("2000-01-01", dateFormat));
         validFilmDto.setDuration(120);
+        validFilmDto.setMpa(FilmRatingMapper.toDto(FilmRating.PG_13, FilmRatingService.FILM_RATING_LOCALE));
+        validFilmDto.setGenres(new ArrayList<>());
 
         validFilm = new Film();
         validFilm.setId(1L);
         validFilm.setName("film");
         validFilm.setDescription("description");
-        validFilm.setReleaseDate(dateFormat.parse("2000-01-01"));
+        validFilm.setReleaseDate(LocalDate.parse("2000-01-01"));
         validFilm.setDuration(120);
+        validFilm.setRating(FilmRating.PG_13);
+        validFilm.setGenres(new HashSet<>());
     }
 
     @Test
@@ -80,9 +94,9 @@ public class FilmControllerTest {
 
     @Test
     void testFilmController_addFilm_And_GetFilms_ShouldWorkTogether() throws Exception {
-        when(filmService.createFilm(any())).thenReturn(validFilm);
+        when(filmService.createFilm(any())).thenReturn(validFilmDto);
 
-        List<Film> filmsList = Collections.singletonList(validFilm);
+        List<FilmDto> filmsList = Collections.singletonList(validFilmDto);
         when(filmService.getFilms()).thenReturn(filmsList);
 
         mockMvc.perform(post("/films")
@@ -106,7 +120,7 @@ public class FilmControllerTest {
 
     @Test
     void testFilmController_updateFilm_ShouldUpdateExistingFilm() throws Exception {
-        when(filmService.createFilm(any(Film.class))).thenReturn(validFilm);
+        when(filmService.createFilm(any(Film.class))).thenReturn(validFilmDto);
 
         mockMvc.perform(post("/films")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -117,19 +131,23 @@ public class FilmControllerTest {
         updatedFilmDto.setId(1L);
         updatedFilmDto.setName("film edited");
         updatedFilmDto.setDescription("descr edited");
-        updatedFilmDto.setReleaseDate(dateFormat.parse("2000-01-01"));
+        updatedFilmDto.setReleaseDate(LocalDate.parse("2000-01-01"));
+        updatedFilmDto.setMpa(FilmRatingMapper.toDto(FilmRating.PG_13, FilmRatingService.FILM_RATING_LOCALE));
+        updatedFilmDto.setGenres(new ArrayList<>());
         updatedFilmDto.setDuration(150);
 
         Film updatedFilm = new Film();
         updatedFilm.setId(1L);
         updatedFilm.setName("film edited");
         updatedFilm.setDescription("descr edited");
-        updatedFilm.setReleaseDate(dateFormat.parse("2000-01-01"));
+        updatedFilm.setReleaseDate(LocalDate.parse("2000-01-01"));
         updatedFilm.setDuration(150);
+        updatedFilm.setRating(FilmRating.PG_13);
+        updatedFilm.setGenres(new HashSet<>());
 
-        when(filmService.updateFilm(any(Film.class))).thenReturn(updatedFilm);
+        when(filmService.updateFilm(any(Film.class))).thenReturn(updatedFilmDto);
 
-        List<Film> filmsAfterUpdate = Collections.singletonList(updatedFilm);
+        List<FilmDto> filmsAfterUpdate = Collections.singletonList(updatedFilmDto);
         when(filmService.getFilms()).thenReturn(filmsAfterUpdate);
 
         mockMvc.perform(put("/films")
@@ -139,6 +157,7 @@ public class FilmControllerTest {
                 .andExpect(jsonPath("$.id", is(1)))
                 .andExpect(jsonPath("$.name", is("film edited")))
                 .andExpect(jsonPath("$.description", is("descr edited")))
+                .andExpect(jsonPath("$.releaseDate", is("2000-01-01")))
                 .andExpect(jsonPath("$.duration", is(150)));
 
         mockMvc.perform(get("/films"))
@@ -184,8 +203,11 @@ public class FilmControllerTest {
         filmWithDuration.setDescription(validFilmDto.getDescription());
         filmWithDuration.setReleaseDate(validFilmDto.getReleaseDate());
         filmWithDuration.setDuration(duration);
+        filmWithDuration.setRating(FilmRating.PG_13);
+        filmWithDuration.setGenres(new HashSet<>());
+        FilmDto filmWithDurationDto = FilmMapper.mapToFilmDto(filmWithDuration);
 
-        when(filmService.createFilm(any(Film.class))).thenReturn(filmWithDuration);
+        when(filmService.createFilm(any(Film.class))).thenReturn(filmWithDurationDto);
 
         mockMvc.perform(post("/films")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -217,7 +239,7 @@ public class FilmControllerTest {
             "2024-01-01"
     })
     void testFilmController_addFilm_WithValidReleaseDates_ShouldSucceed(String dateString) throws Exception {
-        Date releaseDate = dateFormat.parse(dateString);
+        LocalDate releaseDate = LocalDate.parse(dateString);
         validFilmDto.setReleaseDate(releaseDate);
 
         Film filmWithDate = new Film();
@@ -226,8 +248,11 @@ public class FilmControllerTest {
         filmWithDate.setDescription(validFilmDto.getDescription());
         filmWithDate.setReleaseDate(releaseDate);
         filmWithDate.setDuration(validFilmDto.getDuration());
+        filmWithDate.setRating(FilmRating.PG_13);
+        filmWithDate.setGenres(new HashSet<>());
+        FilmDto filmWithDateDto = FilmMapper.mapToFilmDto(filmWithDate);
 
-        when(filmService.createFilm(any(Film.class))).thenReturn(filmWithDate);
+        when(filmService.createFilm(any(Film.class))).thenReturn(filmWithDateDto);
 
         mockMvc.perform(post("/films")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -244,7 +269,7 @@ public class FilmControllerTest {
             "1700-01-01"
     })
     void testFilmController_addFilm_WithInvalidReleaseDates_ShouldReject(String dateString) throws Exception {
-        Date releaseDate = dateFormat.parse(dateString);
+        LocalDate releaseDate = LocalDate.parse(dateString);
         validFilmDto.setReleaseDate(releaseDate);
 
         mockMvc.perform(post("/films")
@@ -267,8 +292,11 @@ public class FilmControllerTest {
             filmWithName.setDescription(validFilmDto.getDescription());
             filmWithName.setReleaseDate(validFilmDto.getReleaseDate());
             filmWithName.setDuration(validFilmDto.getDuration());
+            filmWithName.setRating(FilmRating.PG_13);
+            filmWithName.setGenres(new HashSet<>());
+            FilmDto filmWithNameDto = FilmMapper.mapToFilmDto(filmWithName);
 
-            when(filmService.createFilm(any(Film.class))).thenReturn(filmWithName);
+            when(filmService.createFilm(any(Film.class))).thenReturn(filmWithNameDto);
         }
 
         var result = mockMvc.perform(post("/films")
@@ -296,8 +324,11 @@ public class FilmControllerTest {
             filmWithDesc.setDescription(description);
             filmWithDesc.setReleaseDate(validFilmDto.getReleaseDate());
             filmWithDesc.setDuration(validFilmDto.getDuration());
+            filmWithDesc.setRating(FilmRating.PG_13);
+            filmWithDesc.setGenres(new HashSet<>());
+            FilmDto filmWithDescDto = FilmMapper.mapToFilmDto(filmWithDesc);
 
-            when(filmService.createFilm(any(Film.class))).thenReturn(filmWithDesc);
+            when(filmService.createFilm(any(Film.class))).thenReturn(filmWithDescDto);
         }
 
         var result = mockMvc.perform(post("/films")
@@ -318,21 +349,21 @@ public class FilmControllerTest {
         nullNameFilm.setId(2L);
         nullNameFilm.setName(null);
         nullNameFilm.setDescription("Test");
-        nullNameFilm.setReleaseDate(new Date());
+        nullNameFilm.setReleaseDate(LocalDate.now());
         nullNameFilm.setDuration(120);
 
         FilmDto emptyNameFilm = new FilmDto();
         emptyNameFilm.setId(3L);
         emptyNameFilm.setName("");
         emptyNameFilm.setDescription("Test");
-        emptyNameFilm.setReleaseDate(new Date());
+        emptyNameFilm.setReleaseDate(LocalDate.now());
         emptyNameFilm.setDuration(120);
 
         FilmDto blankNameFilm = new FilmDto();
         blankNameFilm.setId(4L);
         blankNameFilm.setName("   ");
         blankNameFilm.setDescription("Test");
-        blankNameFilm.setReleaseDate(new Date());
+        blankNameFilm.setReleaseDate(LocalDate.now());
         blankNameFilm.setDuration(120);
 
         FilmDto nullReleaseDateFilm = new FilmDto();
@@ -346,7 +377,7 @@ public class FilmControllerTest {
         nullDurationFilm.setId(6L);
         nullDurationFilm.setName("Test");
         nullDurationFilm.setDescription("Test");
-        nullDurationFilm.setReleaseDate(new Date());
+        nullDurationFilm.setReleaseDate(LocalDate.now());
         nullDurationFilm.setDuration(null);
 
         return Stream.of(

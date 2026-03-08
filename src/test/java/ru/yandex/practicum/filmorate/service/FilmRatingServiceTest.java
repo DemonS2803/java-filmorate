@@ -34,19 +34,19 @@ class FilmRatingServiceTest {
         assertThat(result).hasSize(5);
 
         assertThat(result.get(0).getId()).isEqualTo(1);
-        assertThat(result.get(0).getName()).isEqualTo("0+");
+        assertThat(result.get(0).getName()).isEqualTo("G");
 
         assertThat(result.get(1).getId()).isEqualTo(2);
-        assertThat(result.get(1).getName()).isEqualTo("6+");
+        assertThat(result.get(1).getName()).isEqualTo("PG");
 
         assertThat(result.get(2).getId()).isEqualTo(3);
-        assertThat(result.get(2).getName()).isEqualTo("12+");
+        assertThat(result.get(2).getName()).isEqualTo("PG-13");
 
         assertThat(result.get(3).getId()).isEqualTo(4);
-        assertThat(result.get(3).getName()).isEqualTo("16+");
+        assertThat(result.get(3).getName()).isEqualTo("R");
 
         assertThat(result.get(4).getId()).isEqualTo(5);
-        assertThat(result.get(4).getName()).isEqualTo("18+");
+        assertThat(result.get(4).getName()).isEqualTo("NC-17");
     }
 
     @Test
@@ -66,11 +66,11 @@ class FilmRatingServiceTest {
         assertThat(result.getId()).isEqualTo(id);
 
         switch (id) {
-            case 1 -> assertThat(result.getName()).isEqualTo("0+");
-            case 2 -> assertThat(result.getName()).isEqualTo("6+");
-            case 3 -> assertThat(result.getName()).isEqualTo("12+");
-            case 4 -> assertThat(result.getName()).isEqualTo("16+");
-            case 5 -> assertThat(result.getName()).isEqualTo("18+");
+            case 1 -> assertThat(result.getName()).isEqualTo("G");
+            case 2 -> assertThat(result.getName()).isEqualTo("PG");
+            case 3 -> assertThat(result.getName()).isEqualTo("PG-13");
+            case 4 -> assertThat(result.getName()).isEqualTo("R");
+            case 5 -> assertThat(result.getName()).isEqualTo("NC-17");
         }
     }
 
@@ -79,7 +79,7 @@ class FilmRatingServiceTest {
         FilmRatingDto result = filmRatingService.getFilmRatingById(1);
 
         assertThat(result.getId()).isEqualTo(1);
-        assertThat(result.getName()).isEqualTo("0+");
+        assertThat(result.getName()).isEqualTo("G");
     }
 
     @Test
@@ -87,7 +87,7 @@ class FilmRatingServiceTest {
         FilmRatingDto result = filmRatingService.getFilmRatingById(2);
 
         assertThat(result.getId()).isEqualTo(2);
-        assertThat(result.getName()).isEqualTo("6+");
+        assertThat(result.getName()).isEqualTo("PG");
     }
 
     @Test
@@ -95,7 +95,7 @@ class FilmRatingServiceTest {
         FilmRatingDto result = filmRatingService.getFilmRatingById(3);
 
         assertThat(result.getId()).isEqualTo(3);
-        assertThat(result.getName()).isEqualTo("12+");
+        assertThat(result.getName()).isEqualTo("PG-13");
     }
 
     @Test
@@ -103,7 +103,7 @@ class FilmRatingServiceTest {
         FilmRatingDto result = filmRatingService.getFilmRatingById(4);
 
         assertThat(result.getId()).isEqualTo(4);
-        assertThat(result.getName()).isEqualTo("16+");
+        assertThat(result.getName()).isEqualTo("R");
     }
 
     @Test
@@ -111,7 +111,7 @@ class FilmRatingServiceTest {
         FilmRatingDto result = filmRatingService.getFilmRatingById(5);
 
         assertThat(result.getId()).isEqualTo(5);
-        assertThat(result.getName()).isEqualTo("18+");
+        assertThat(result.getName()).isEqualTo("NC-17");
     }
 
     @ParameterizedTest

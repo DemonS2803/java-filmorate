@@ -22,7 +22,7 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(FIlmGenreController.class)
+@WebMvcTest({FIlmGenreController.class, ExceptionHandlerController.class})
 class FilmGenreControllerTest {
 
     @Autowired
@@ -261,7 +261,7 @@ class FilmGenreControllerTest {
         // Then
         verify(filmGenreService, times(2)).getFilmGenreById(1);
         verify(filmGenreService, times(1)).getFilmGenreById(2);
-        verify(filmGenreService, times(3)).getFilmGenreById(anyInt());
+        verify(filmGenreService, times(3)).getFilmGenreById(anyLong());
     }
 
     @Test
