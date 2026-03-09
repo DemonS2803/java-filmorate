@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exceptions.InvalidFilmDataException;
 import ru.yandex.practicum.filmorate.model.Film;
 
+@Slf4j
 @Primary
 @Repository("databaseFilmStorage")
 public class DatabaseFilmStorage extends DatabaseStorage<Film> implements FilmStorage {
@@ -62,6 +64,7 @@ public class DatabaseFilmStorage extends DatabaseStorage<Film> implements FilmSt
         );
         saveFilmGenres(id, film.getGenres());
         film.setId(id);
+        log.info("Saved new film with id {}", id);
         return film;
     }
 
@@ -81,6 +84,7 @@ public class DatabaseFilmStorage extends DatabaseStorage<Film> implements FilmSt
         updateFilmLikes(film.getId(), film.getLikedByUsers());
         updateFilmGenres(film.getId(), film.getGenres());
 
+        log.info("Updated new film with id {}", film.getId());
         return film;
     }
 
@@ -88,23 +92,27 @@ public class DatabaseFilmStorage extends DatabaseStorage<Film> implements FilmSt
     public boolean delete(long id) {
         // clear film_genres_mapper table for this film
         updateFilmGenres(id, new HashSet<>());
+        log.info("Delete film with id {}", id);
         return delete(DELETE_FILM_QUERY, id);
     }
 
     @Override
     public List<Film> findMostPopularFilms(Integer size) {
+        log.debug("Find most popular films");
         return findMany(FIND_MOST_POPULAR_FILMS_QUERY, size).stream()
                 .map(this::loadAdditionalFields)
                 .collect(Collectors.toList());
     }
 
     private Film loadAdditionalFields(Film film) {
+        log.debug("Load additional field for film {}", film.getId());
         film = loadFilmLikes(film);
         film = loadFilmGenres(film);
         return film;
     }
 
     private Film loadFilmLikes(Film film) {
+        log.debug("Load film liked by users list for film {}", film.getId());
         Set<Long> likes = new HashSet<>(jdbc.queryForList(FIND_LIKED_BY_FOR_FILM_QUERY, Long.class, film.getId()));
         film.setLikedByUsers(likes);
         return film;
@@ -112,12 +120,14 @@ public class DatabaseFilmStorage extends DatabaseStorage<Film> implements FilmSt
 
 
     private Film loadFilmGenres(Film film) {
+        log.debug("Load film genres list for film {}", film.getId());
         Set<Long> genres = new HashSet<>(jdbc.queryForList(FIND_GENRES_BY_FILM_ID_QUERY, Long.class, film.getId()));
         film.setGenres(genres);
         return film;
     }
 
     private void saveFilmLikes(Long filmId, Set<Long> likedByUserIds) {
+        log.info("Save film {} likes list", filmId);
         if (likedByUserIds == null || likedByUserIds.isEmpty()) {
             return;
         }
@@ -128,6 +138,7 @@ public class DatabaseFilmStorage extends DatabaseStorage<Film> implements FilmSt
     }
 
     private void updateFilmLikes(Long filmId, Set<Long> likedByUserIds) {
+        log.info("Update film {} likes list", filmId);
         jdbc.update(CLEAR_FILM_LIKES_QUERY, filmId);
 
         if (likedByUserIds != null && !likedByUserIds.isEmpty()) {
@@ -136,6 +147,7 @@ public class DatabaseFilmStorage extends DatabaseStorage<Film> implements FilmSt
     }
 
     private void saveFilmGenres(Long filmId, Set<Long> genres) {
+        log.info("Save film {} genres list", filmId);
         if (genres == null || genres.isEmpty()) {
             return;
         }
@@ -146,12 +158,12 @@ public class DatabaseFilmStorage extends DatabaseStorage<Film> implements FilmSt
     }
 
     private void updateFilmGenres(Long filmId, Set<Long> genres) {
+        log.info("Update film {} genres list", filmId);
         jdbc.update(CLEAR_GENRES_FOR_FILM_QUERY, filmId);
 
         if (genres != null && !genres.isEmpty()) {
             saveFilmGenres(filmId, genres);
         }
     }
-
 
 }

@@ -2,12 +2,10 @@ package ru.yandex.practicum.filmorate.dto;
 
 import java.time.LocalDate;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.OptBoolean;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -15,8 +13,6 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
-import ru.yandex.practicum.filmorate.exceptions.NoFilmRatingFoundException;
-import ru.yandex.practicum.filmorate.model.FilmRating;
 
 @Getter
 @Setter

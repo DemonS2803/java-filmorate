@@ -1,9 +1,9 @@
 package ru.yandex.practicum.filmorate.mapper;
 
+import java.util.HashSet;
+
 import ru.yandex.practicum.filmorate.dto.UserDto;
 import ru.yandex.practicum.filmorate.model.User;
-
-import java.util.HashSet;
 
 public class UserMapper {
 

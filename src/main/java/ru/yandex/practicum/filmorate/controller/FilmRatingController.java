@@ -1,5 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,8 +14,6 @@ import lombok.extern.slf4j.Slf4j;
 import ru.yandex.practicum.filmorate.dto.FilmRatingDto;
 import ru.yandex.practicum.filmorate.service.FilmRatingService;
 
-import java.util.List;
-
 @Slf4j
 @RestController
 @RequestMapping("/mpa")
@@ -24,12 +24,16 @@ public class FilmRatingController {
 
     @GetMapping
     public ResponseEntity<List<FilmRatingDto>> getFilmRatings() {
-        return new ResponseEntity<>(filmRatingService.getAllFilmRatings(), HttpStatus.OK);
+        log.debug("Get all film ratings");
+        List<FilmRatingDto> filmRatings = filmRatingService.getAllFilmRatings();
+        return new ResponseEntity<>(filmRatings, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<FilmRatingDto> getFilmRatingById(@PathVariable("id") int id) {
-        return new ResponseEntity<>(filmRatingService.getFilmRatingById(id), HttpStatus.OK);
+        log.debug("Get film rating by id {}", id);
+        FilmRatingDto filmRating = filmRatingService.getFilmRatingById(id);
+        return new ResponseEntity<>(filmRating, HttpStatus.OK);
     }
 
 }

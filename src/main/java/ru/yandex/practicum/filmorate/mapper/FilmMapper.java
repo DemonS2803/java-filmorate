@@ -1,15 +1,14 @@
 package ru.yandex.practicum.filmorate.mapper;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.stream.Collectors;
+
 import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dto.FilmGenreDto;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmRating;
 import ru.yandex.practicum.filmorate.service.FilmRatingService;
-import ru.yandex.practicum.filmorate.service.FilmService;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.stream.Collectors;
 
 public class FilmMapper {
 

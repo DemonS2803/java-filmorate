@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exceptions.InvalidUserDataException;
 import ru.yandex.practicum.filmorate.model.User;
 
+@Slf4j
 @Primary
 @Repository("databaseUserStorage")
 public class DatabaseUserStorage extends DatabaseStorage<User> implements UserStorage {
@@ -41,6 +43,7 @@ public class DatabaseUserStorage extends DatabaseStorage<User> implements UserSt
 
     @Override
     public Optional<User> findUserById(Long id) {
+        log.debug("Find user by id {}", id);
         return findOne(FIND_USER_BY_ID_QUERY, id)
                 .map(this::loadUserFriends);
     }
@@ -54,6 +57,7 @@ public class DatabaseUserStorage extends DatabaseStorage<User> implements UserSt
                 user.getBirthday()
         );
         user.setId(id);
+        log.debug("Saved new user with id {}", id);
         return user;
     }
 
@@ -73,21 +77,25 @@ public class DatabaseUserStorage extends DatabaseStorage<User> implements UserSt
 
         updateUserFriends(user.getId(), user.getFriends());
 
+        log.debug("Updated user with id {}", user.getId());
         return user;
     }
 
     @Override
     public boolean delete(Long id) {
+        log.info("Delete user with id {}", id);
         return delete(DELETE_USER_QUERY, id);
     }
 
     private User loadUserFriends(User user) {
+        log.debug("Load user friends for {}", user.getId());
         Set<Long> friends = new HashSet<>(jdbc.queryForList(FIND_FRIENDS_BY_USER_ID_QUERY, Long.class, user.getId()));
         user.setFriends(friends);
         return user;
     }
 
     private void saveUserFriends(Long userId, Set<Long> friendIds) {
+        log.debug("Save user friends for {}", userId);
         if (friendIds == null || friendIds.isEmpty()) {
             return;
         }
@@ -98,6 +106,7 @@ public class DatabaseUserStorage extends DatabaseStorage<User> implements UserSt
     }
 
     private void updateUserFriends(Long userId, Set<Long> newFriendIds) {
+        log.debug("Update user friends for {}", userId);
         jdbc.update(DELETE_USER_FRIEND_QUERY, userId);
 
         if (newFriendIds != null && !newFriendIds.isEmpty()) {

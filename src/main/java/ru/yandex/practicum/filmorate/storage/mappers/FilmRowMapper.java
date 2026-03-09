@@ -1,15 +1,14 @@
 package ru.yandex.practicum.filmorate.storage.mappers;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.time.LocalDate;
+import java.util.HashSet;
+
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmRating;
-
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.time.LocalDate;
-import java.util.Date;
-import java.util.HashSet;
 
 @Component
 public class FilmRowMapper implements RowMapper<Film> {

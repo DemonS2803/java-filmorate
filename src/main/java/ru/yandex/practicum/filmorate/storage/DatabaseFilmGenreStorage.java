@@ -31,6 +31,7 @@ public class DatabaseFilmGenreStorage extends DatabaseStorage<FilmGenre> impleme
 
     @Override
     public Optional<FilmGenre> findFilmGenreById(long id) {
+        log.debug("Fild film genre by id {}", id);
         return findOne(FIND_GENRE_BY_ID_QUERY, id);
     }
 
@@ -38,6 +39,7 @@ public class DatabaseFilmGenreStorage extends DatabaseStorage<FilmGenre> impleme
     public FilmGenre save(FilmGenre genre) {
         long id = insert(SAVE_GENRE_QUERY, genre.getName());
         genre.setId(id);
+        log.info("Saved new genre with id: {}", id);
         return genre;
     }
 
@@ -47,6 +49,7 @@ public class DatabaseFilmGenreStorage extends DatabaseStorage<FilmGenre> impleme
             throw new InvalidFilmDataException("Film genre id is empty. Failed to update film genre");
         }
         update(UPDATE_GENRE_QUERY, genre.getName(), genre.getId());
+        log.info("Updated genre with id: {}", genre.getId());
         return genre;
     }
 
@@ -55,6 +58,7 @@ public class DatabaseFilmGenreStorage extends DatabaseStorage<FilmGenre> impleme
         if (findFilmGenreById(id).isEmpty()) {
             throw new InvalidFilmDataException("Film genre id is empty. Failed to update film genre");
         }
+        log.info("Delete genre with id: {}", id);
         return delete(DELETE_GENRE_QUERY, id);
     }
 }

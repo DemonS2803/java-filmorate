@@ -27,11 +27,11 @@ public class UserService {
     }
 
     public User getUserById(long id) {
-        log.debug("Get user by id: {}", id);
         return getUserByIdOrThrow(id);
     }
 
     private User getUserByIdOrThrow(Long id) {
+        log.debug("Get user by id: {}", id);
         return userStorage.findUserById(id)
                 .orElseThrow(() -> new NoUserFoundException("No user with id " + id + " found"));
     }

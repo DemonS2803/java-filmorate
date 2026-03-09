@@ -2,8 +2,6 @@ package ru.yandex.practicum.filmorate.service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.springframework.boot.autoconfigure.context.ConfigurationPropertiesAutoConfiguration;
 import org.springframework.stereotype.Service;
@@ -16,7 +14,6 @@ import ru.yandex.practicum.filmorate.exceptions.NoFilmFoundException;
 import ru.yandex.practicum.filmorate.exceptions.NoFilmRatingFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.FilmGenre;
 import ru.yandex.practicum.filmorate.model.FilmRating;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
@@ -102,6 +99,7 @@ public class FilmService {
     }
 
     private FilmDto convertToDto(Film film) {
+        log.debug("Convert {} to DTO object", film);
         FilmDto dto = FilmMapper.mapToFilmDto(film);
         loadFilmGenresToDto(dto, film);
         return dto;
@@ -125,7 +123,7 @@ public class FilmService {
 
     private void loadFilmGenresToDto(FilmDto dto, Film film) {
         List<FilmGenreDto> filmGenres = filmGenreService.getFilmGenresByIds(film.getGenres());
-        log.info("Load film genres to dto: {}", filmGenres);
+        log.debug("Load film genres to dto: {}", filmGenres);
         dto.setGenres(filmGenres);
     }
 
