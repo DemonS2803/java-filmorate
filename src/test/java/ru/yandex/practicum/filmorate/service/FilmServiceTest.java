@@ -1,8 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
 import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.ArrayList;

@@ -6,14 +6,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
+
+import lombok.RequiredArgsConstructor;
 import ru.yandex.practicum.filmorate.model.User;
 
 import static org.assertj.core.api.Assertions.assertThat;

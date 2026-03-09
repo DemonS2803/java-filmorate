@@ -1,9 +1,3 @@
--- for postman tests passing only
--- delete from film_likes;
--- delete from film_genres_mapper;
--- delete from user_friends;
--- delete from users;
--- delete from films;
 
 drop table film_likes if exists;
 drop table film_genres_mapper if exists;

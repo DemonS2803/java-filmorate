@@ -1,5 +1,8 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import java.util.Arrays;
+import java.util.List;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,9 +16,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import ru.yandex.practicum.filmorate.dto.FilmGenreDto;
 import ru.yandex.practicum.filmorate.exceptions.NoFilmGenreFoundException;
 import ru.yandex.practicum.filmorate.service.FilmGenreService;
-
-import java.util.Arrays;
-import java.util.List;
 
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.*;
@@ -41,7 +41,6 @@ class FilmGenreControllerTest {
 
     @BeforeEach
     void setUp() {
-        // Initialize mock DTOs based on the example in the requirement
         comedyGenre = new FilmGenreDto(1L, "Комедия");
         dramaGenre = new FilmGenreDto(2L, "Драма");
         actionGenre = new FilmGenreDto(3L, "Боевик");
@@ -51,10 +50,8 @@ class FilmGenreControllerTest {
 
     @Test
     void getFilmGenres_ShouldReturnAllGenres() throws Exception {
-        // Given
         when(filmGenreService.getAllFilmGenres()).thenReturn(mockGenres);
 
-        // When & Then
         mockMvc.perform(get("/genres")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -73,10 +70,8 @@ class FilmGenreControllerTest {
 
     @Test
     void getFilmGenres_WhenServiceReturnsEmptyList_ShouldReturnEmptyArray() throws Exception {
-        // Given
         when(filmGenreService.getAllFilmGenres()).thenReturn(List.of());
 
-        // When & Then
         mockMvc.perform(get("/genres")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -88,11 +83,9 @@ class FilmGenreControllerTest {
 
     @Test
     void getFilmGenreById_WithValidId_ShouldReturnGenre() throws Exception {
-        // Given
         int id = 1;
         when(filmGenreService.getFilmGenreById(id)).thenReturn(comedyGenre);
 
-        // When & Then
         mockMvc.perform(get("/genres/{id}", id)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -105,7 +98,6 @@ class FilmGenreControllerTest {
     @ParameterizedTest
     @ValueSource(ints = {1, 2, 3})
     void getFilmGenreById_WithAllValidIds_ShouldReturnCorrespondingGenres(int id) throws Exception {
-        // Given
         FilmGenreDto expectedGenre = switch (id) {
             case 1 -> comedyGenre;
             case 2 -> dramaGenre;
@@ -115,7 +107,6 @@ class FilmGenreControllerTest {
 
         when(filmGenreService.getFilmGenreById(id)).thenReturn(expectedGenre);
 
-        // When & Then
         mockMvc.perform(get("/genres/{id}", id)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -137,12 +128,10 @@ class FilmGenreControllerTest {
 
     @Test
     void getFilmGenreById_WithInvalidId_ShouldReturn404() throws Exception {
-        // Given
         int invalidId = 99;
         when(filmGenreService.getFilmGenreById(invalidId))
                 .thenThrow(new NoFilmGenreFoundException("Film genre not found with id: " + invalidId));
 
-        // When & Then
         mockMvc.perform(get("/genres/{id}", invalidId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
@@ -152,12 +141,10 @@ class FilmGenreControllerTest {
 
     @Test
     void getFilmGenreById_WithNegativeId_ShouldReturn404() throws Exception {
-        // Given
         int negativeId = -1;
         when(filmGenreService.getFilmGenreById(negativeId))
                 .thenThrow(new NoFilmGenreFoundException("Film genre not found with id: " + negativeId));
 
-        // When & Then
         mockMvc.perform(get("/genres/{id}", negativeId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
@@ -167,12 +154,10 @@ class FilmGenreControllerTest {
 
     @Test
     void getFilmGenreById_WithZeroId_ShouldReturn404() throws Exception {
-        // Given
         int zeroId = 0;
         when(filmGenreService.getFilmGenreById(zeroId))
                 .thenThrow(new NoFilmGenreFoundException("Film genre not found with id: " + zeroId));
 
-        // When & Then
         mockMvc.perform(get("/genres/{id}", zeroId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
@@ -182,7 +167,6 @@ class FilmGenreControllerTest {
 
     @Test
     void getFilmGenreById_WithStringId_ShouldReturn400() throws Exception {
-        // When & Then
         mockMvc.perform(get("/genres/{id}", "invalid")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
@@ -192,10 +176,8 @@ class FilmGenreControllerTest {
 
     @Test
     void getFilmGenres_ShouldReturnCorrectJsonStructure() throws Exception {
-        // Given
         when(filmGenreService.getAllFilmGenres()).thenReturn(mockGenres);
 
-        // When & Then - Verify JSON structure matches the example in requirements
         mockMvc.perform(get("/genres"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").exists())
@@ -207,10 +189,8 @@ class FilmGenreControllerTest {
 
     @Test
     void getFilmGenreById_ShouldReturnCorrectJsonStructure() throws Exception {
-        // Given
         when(filmGenreService.getFilmGenreById(1)).thenReturn(comedyGenre);
 
-        // When & Then - Verify JSON structure matches the example in requirements
         mockMvc.perform(get("/genres/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").exists())
@@ -224,12 +204,10 @@ class FilmGenreControllerTest {
 
     @Test
     void getFilmGenreById_WithVeryLargeId_ShouldReturn404() throws Exception {
-        // Given
         int largeId = 999999;
         when(filmGenreService.getFilmGenreById(largeId))
                 .thenThrow(new NoFilmGenreFoundException("Film genre not found with id: " + largeId));
 
-        // When & Then
         mockMvc.perform(get("/genres/{id}", largeId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
@@ -239,26 +217,21 @@ class FilmGenreControllerTest {
 
     @Test
     void controllerEndpoints_ShouldHandleServiceException() throws Exception {
-        // Given
         when(filmGenreService.getAllFilmGenres()).thenThrow(new RuntimeException("Database error"));
 
-        // When & Then
         mockMvc.perform(get("/genres"))
                 .andExpect(status().is5xxServerError());
     }
 
     @Test
     void getFilmGenreById_WithMultipleRequests_ShouldCallServiceEachTime() throws Exception {
-        // Given
         when(filmGenreService.getFilmGenreById(1)).thenReturn(comedyGenre);
         when(filmGenreService.getFilmGenreById(2)).thenReturn(dramaGenre);
 
-        // When
         mockMvc.perform(get("/genres/1"));
         mockMvc.perform(get("/genres/2"));
         mockMvc.perform(get("/genres/1"));
 
-        // Then
         verify(filmGenreService, times(2)).getFilmGenreById(1);
         verify(filmGenreService, times(1)).getFilmGenreById(2);
         verify(filmGenreService, times(3)).getFilmGenreById(anyLong());
@@ -266,7 +239,6 @@ class FilmGenreControllerTest {
 
     @Test
     void getFilmGenres_ShouldReturnGenresInCorrectOrder() throws Exception {
-        // Given
         List<FilmGenreDto> orderedGenres = Arrays.asList(
                 new FilmGenreDto(1L, "Комедия"),
                 new FilmGenreDto(2L, "Драма"),
@@ -276,7 +248,6 @@ class FilmGenreControllerTest {
         );
         when(filmGenreService.getAllFilmGenres()).thenReturn(orderedGenres);
 
-        // When & Then
         mockMvc.perform(get("/genres"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(1))
@@ -293,10 +264,8 @@ class FilmGenreControllerTest {
 
     @Test
     void getFilmGenreById_WithId1_ShouldReturnComedy() throws Exception {
-        // Given
         when(filmGenreService.getFilmGenreById(1)).thenReturn(comedyGenre);
 
-        // When & Then - Verify specific example from requirements
         mockMvc.perform(get("/genres/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))

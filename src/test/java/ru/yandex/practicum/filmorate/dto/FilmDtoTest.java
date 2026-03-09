@@ -3,8 +3,6 @@ package ru.yandex.practicum.filmorate.dto;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
 
