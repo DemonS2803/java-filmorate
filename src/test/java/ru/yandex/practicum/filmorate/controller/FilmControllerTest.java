@@ -22,6 +22,8 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
+import ru.yandex.practicum.filmorate.dto.NewFilmRequestDto;
+import ru.yandex.practicum.filmorate.dto.UpdateFilmRequestDto;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.mapper.FilmRatingMapper;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -51,20 +53,21 @@ public class FilmControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    private FilmDto validFilmDto;
+    private UpdateFilmRequestDto validUpdateFilmRequestDto;
     private Film validFilm;
+    private FilmDto validFilmDto;
     private final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     @BeforeEach
     void setUp() throws Exception {
-        validFilmDto = new FilmDto();
-        validFilmDto.setId(1L);
-        validFilmDto.setName("film");
-        validFilmDto.setDescription("description");
-        validFilmDto.setReleaseDate(LocalDate.parse("2000-01-01", dateFormat));
-        validFilmDto.setDuration(120);
-        validFilmDto.setMpa(FilmRatingMapper.toDto(FilmRating.PG_13, FilmRatingService.FILM_RATING_LOCALE));
-        validFilmDto.setGenres(new ArrayList<>());
+        validUpdateFilmRequestDto = new UpdateFilmRequestDto();
+        validUpdateFilmRequestDto.setId(1L);
+        validUpdateFilmRequestDto.setName("film");
+        validUpdateFilmRequestDto.setDescription("description");
+        validUpdateFilmRequestDto.setReleaseDate(LocalDate.parse("2000-01-01", dateFormat));
+        validUpdateFilmRequestDto.setDuration(120);
+        validUpdateFilmRequestDto.setMpa(FilmRatingMapper.toDto(FilmRating.PG_13, FilmRatingService.FILM_RATING_LOCALE));
+        validUpdateFilmRequestDto.setGenres(new ArrayList<>());
 
         validFilm = new Film();
         validFilm.setId(1L);
@@ -74,6 +77,7 @@ public class FilmControllerTest {
         validFilm.setDuration(120);
         validFilm.setRating(FilmRating.PG_13);
         validFilm.setGenres(new HashSet<>());
+        validFilmDto = FilmMapper.mapToFilmDto(validFilm);
     }
 
     @Test
@@ -97,7 +101,7 @@ public class FilmControllerTest {
 
         mockMvc.perform(post("/films")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(validFilmDto)))
+                        .content(objectMapper.writeValueAsString(validUpdateFilmRequestDto)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id", is(1)))
                 .andExpect(jsonPath("$.name", is("film")))
@@ -110,27 +114,27 @@ public class FilmControllerTest {
                 .andExpect(jsonPath("$[0].id", is(1)))
                 .andExpect(jsonPath("$[0].name", is("film")));
 
-        verify(filmService, times(1)).createFilm(any(Film.class));
+        verify(filmService, times(1)).createFilm(any(NewFilmRequestDto.class));
         verify(filmService, times(1)).getFilms();
     }
 
     @Test
     void testFilmController_updateFilm_ShouldUpdateExistingFilm() throws Exception {
-        when(filmService.createFilm(any(Film.class))).thenReturn(validFilmDto);
+        when(filmService.createFilm(any(NewFilmRequestDto.class))).thenReturn(validFilmDto);
 
         mockMvc.perform(post("/films")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(validFilmDto)))
+                        .content(objectMapper.writeValueAsString(validUpdateFilmRequestDto)))
                 .andExpect(status().isCreated());
 
-        FilmDto updatedFilmDto = new FilmDto();
-        updatedFilmDto.setId(1L);
-        updatedFilmDto.setName("film edited");
-        updatedFilmDto.setDescription("descr edited");
-        updatedFilmDto.setReleaseDate(LocalDate.parse("2000-01-01"));
-        updatedFilmDto.setMpa(FilmRatingMapper.toDto(FilmRating.PG_13, FilmRatingService.FILM_RATING_LOCALE));
-        updatedFilmDto.setGenres(new ArrayList<>());
-        updatedFilmDto.setDuration(150);
+        UpdateFilmRequestDto updatedUpdateFilmRequestDto = new UpdateFilmRequestDto();
+        updatedUpdateFilmRequestDto.setId(1L);
+        updatedUpdateFilmRequestDto.setName("film edited");
+        updatedUpdateFilmRequestDto.setDescription("descr edited");
+        updatedUpdateFilmRequestDto.setReleaseDate(LocalDate.parse("2000-01-01"));
+        updatedUpdateFilmRequestDto.setMpa(FilmRatingMapper.toDto(FilmRating.PG_13, FilmRatingService.FILM_RATING_LOCALE));
+        updatedUpdateFilmRequestDto.setGenres(new ArrayList<>());
+        updatedUpdateFilmRequestDto.setDuration(150);
 
         Film updatedFilm = new Film();
         updatedFilm.setId(1L);
@@ -140,15 +144,16 @@ public class FilmControllerTest {
         updatedFilm.setDuration(150);
         updatedFilm.setRating(FilmRating.PG_13);
         updatedFilm.setGenres(new HashSet<>());
+        FilmDto updatedFilmDto = FilmMapper.mapToFilmDto(updatedFilm);
 
-        when(filmService.updateFilm(any(Film.class))).thenReturn(updatedFilmDto);
+        when(filmService.updateFilm(any(UpdateFilmRequestDto.class))).thenReturn(updatedFilmDto);
 
         List<FilmDto> filmsAfterUpdate = Collections.singletonList(updatedFilmDto);
         when(filmService.getFilms()).thenReturn(filmsAfterUpdate);
 
         mockMvc.perform(put("/films")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updatedFilmDto)))
+                        .content(objectMapper.writeValueAsString(updatedUpdateFilmRequestDto)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(1)))
                 .andExpect(jsonPath("$.name", is("film edited")))
@@ -161,70 +166,70 @@ public class FilmControllerTest {
                 .andExpect(jsonPath("$[0].name", is("film edited")))
                 .andExpect(jsonPath("$[0].description", is("descr edited")));
 
-        verify(filmService, times(1)).createFilm(any(Film.class));
-        verify(filmService, times(1)).updateFilm(any(Film.class));
+        verify(filmService, times(1)).createFilm(any(NewFilmRequestDto.class));
+        verify(filmService, times(1)).updateFilm(any(UpdateFilmRequestDto.class));
         verify(filmService, times(1)).getFilms();
     }
 
     @ParameterizedTest
     @MethodSource("invalidFilmProvider")
-    void testFilmController_addFilm_WithInvalidData_ShouldReturnBadRequest(FilmDto invalidFilmDto) throws Exception {
+    void testFilmController_addFilm_WithInvalidData_ShouldReturnBadRequest(UpdateFilmRequestDto invalidUpdateFilmRequestDto) throws Exception {
         mockMvc.perform(post("/films")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(invalidFilmDto)))
+                        .content(objectMapper.writeValueAsString(invalidUpdateFilmRequestDto)))
                 .andExpect(status().isBadRequest());
 
-        verify(filmService, never()).createFilm(any(Film.class));
+        verify(filmService, never()).createFilm(any(NewFilmRequestDto.class));
     }
 
     @ParameterizedTest
     @MethodSource("invalidFilmProvider")
-    void testFilmController_updateFilm_WithInvalidData_ShouldReturnBadRequest(FilmDto invalidFilmDto) throws Exception {
+    void testFilmController_updateFilm_WithInvalidData_ShouldReturnBadRequest(UpdateFilmRequestDto invalidUpdateFilmRequestDto) throws Exception {
         mockMvc.perform(put("/films")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(invalidFilmDto)))
+                        .content(objectMapper.writeValueAsString(invalidUpdateFilmRequestDto)))
                 .andExpect(status().isBadRequest());
 
-        verify(filmService, never()).updateFilm(any(Film.class));
+        verify(filmService, never()).updateFilm(any(UpdateFilmRequestDto.class));
     }
 
     @ParameterizedTest
     @ValueSource(ints = {1, 60, 120, 180, 300, 1000})
     void testFilmController_addFilm_WithValidDurations_ShouldSucceed(Integer duration) throws Exception {
-        validFilmDto.setDuration(duration);
+        validUpdateFilmRequestDto.setDuration(duration);
 
         Film filmWithDuration = new Film();
         filmWithDuration.setId(1L);
-        filmWithDuration.setName(validFilmDto.getName());
-        filmWithDuration.setDescription(validFilmDto.getDescription());
-        filmWithDuration.setReleaseDate(validFilmDto.getReleaseDate());
+        filmWithDuration.setName(validUpdateFilmRequestDto.getName());
+        filmWithDuration.setDescription(validUpdateFilmRequestDto.getDescription());
+        filmWithDuration.setReleaseDate(validUpdateFilmRequestDto.getReleaseDate());
         filmWithDuration.setDuration(duration);
         filmWithDuration.setRating(FilmRating.PG_13);
         filmWithDuration.setGenres(new HashSet<>());
         FilmDto filmWithDurationDto = FilmMapper.mapToFilmDto(filmWithDuration);
 
-        when(filmService.createFilm(any(Film.class))).thenReturn(filmWithDurationDto);
+        when(filmService.createFilm(any(NewFilmRequestDto.class))).thenReturn(filmWithDurationDto);
 
         mockMvc.perform(post("/films")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(validFilmDto)))
+                        .content(objectMapper.writeValueAsString(validUpdateFilmRequestDto)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.duration", is(duration)));
 
-        verify(filmService, times(1)).createFilm(any(Film.class));
+        verify(filmService, times(1)).createFilm(any(NewFilmRequestDto.class));
     }
 
     @ParameterizedTest
     @ValueSource(ints = {0, -1, -10, -100})
     void testFilmController_addFilm_WithInvalidDurations_ShouldReject(Integer duration) throws Exception {
-        validFilmDto.setDuration(duration);
+        validUpdateFilmRequestDto.setDuration(duration);
 
         mockMvc.perform(post("/films")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(validFilmDto)))
+                        .content(objectMapper.writeValueAsString(validUpdateFilmRequestDto)))
                 .andExpect(status().isBadRequest());
 
-        verify(filmService, never()).createFilm(any(Film.class));
+        verify(filmService, never()).createFilm(any(NewFilmRequestDto.class));
     }
 
     @ParameterizedTest
@@ -236,26 +241,26 @@ public class FilmControllerTest {
     })
     void testFilmController_addFilm_WithValidReleaseDates_ShouldSucceed(String dateString) throws Exception {
         LocalDate releaseDate = LocalDate.parse(dateString);
-        validFilmDto.setReleaseDate(releaseDate);
+        validUpdateFilmRequestDto.setReleaseDate(releaseDate);
 
         Film filmWithDate = new Film();
         filmWithDate.setId(1L);
-        filmWithDate.setName(validFilmDto.getName());
-        filmWithDate.setDescription(validFilmDto.getDescription());
+        filmWithDate.setName(validUpdateFilmRequestDto.getName());
+        filmWithDate.setDescription(validUpdateFilmRequestDto.getDescription());
         filmWithDate.setReleaseDate(releaseDate);
-        filmWithDate.setDuration(validFilmDto.getDuration());
+        filmWithDate.setDuration(validUpdateFilmRequestDto.getDuration());
         filmWithDate.setRating(FilmRating.PG_13);
         filmWithDate.setGenres(new HashSet<>());
         FilmDto filmWithDateDto = FilmMapper.mapToFilmDto(filmWithDate);
 
-        when(filmService.createFilm(any(Film.class))).thenReturn(filmWithDateDto);
+        when(filmService.createFilm(any(NewFilmRequestDto.class))).thenReturn(filmWithDateDto);
 
         mockMvc.perform(post("/films")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(validFilmDto)))
+                        .content(objectMapper.writeValueAsString(validUpdateFilmRequestDto)))
                 .andExpect(status().isCreated());
 
-        verify(filmService, times(1)).createFilm(any(Film.class));
+        verify(filmService, times(1)).createFilm(any(NewFilmRequestDto.class));
     }
 
     @ParameterizedTest
@@ -266,110 +271,110 @@ public class FilmControllerTest {
     })
     void testFilmController_addFilm_WithInvalidReleaseDates_ShouldReject(String dateString) throws Exception {
         LocalDate releaseDate = LocalDate.parse(dateString);
-        validFilmDto.setReleaseDate(releaseDate);
+        validUpdateFilmRequestDto.setReleaseDate(releaseDate);
 
         mockMvc.perform(post("/films")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(validFilmDto)))
+                        .content(objectMapper.writeValueAsString(validUpdateFilmRequestDto)))
                 .andExpect(status().isBadRequest());
 
-        verify(filmService, never()).createFilm(any(Film.class));
+        verify(filmService, never()).createFilm(any(NewFilmRequestDto.class));
     }
 
     @ParameterizedTest
     @MethodSource("nameValidationProvider")
     void testFilmController_addFilm_WithVariousNames_ShouldValidateCorrectly(String name, boolean shouldBeValid) throws Exception {
-        validFilmDto.setName(name);
+        validUpdateFilmRequestDto.setName(name);
 
         if (shouldBeValid) {
             Film filmWithName = new Film();
             filmWithName.setId(1L);
             filmWithName.setName(name);
-            filmWithName.setDescription(validFilmDto.getDescription());
-            filmWithName.setReleaseDate(validFilmDto.getReleaseDate());
-            filmWithName.setDuration(validFilmDto.getDuration());
+            filmWithName.setDescription(validUpdateFilmRequestDto.getDescription());
+            filmWithName.setReleaseDate(validUpdateFilmRequestDto.getReleaseDate());
+            filmWithName.setDuration(validUpdateFilmRequestDto.getDuration());
             filmWithName.setRating(FilmRating.PG_13);
             filmWithName.setGenres(new HashSet<>());
             FilmDto filmWithNameDto = FilmMapper.mapToFilmDto(filmWithName);
 
-            when(filmService.createFilm(any(Film.class))).thenReturn(filmWithNameDto);
+            when(filmService.createFilm(any(NewFilmRequestDto.class))).thenReturn(filmWithNameDto);
         }
 
         var result = mockMvc.perform(post("/films")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(validFilmDto)));
+                .content(objectMapper.writeValueAsString(validUpdateFilmRequestDto)));
 
         if (shouldBeValid) {
             result.andExpect(status().isCreated());
-            verify(filmService, times(1)).createFilm(any(Film.class));
+            verify(filmService, times(1)).createFilm(any(NewFilmRequestDto.class));
         } else {
             result.andExpect(status().isBadRequest());
-            verify(filmService, never()).createFilm(any(Film.class));
+            verify(filmService, never()).createFilm(any(NewFilmRequestDto.class));
         }
     }
 
     @ParameterizedTest
     @MethodSource("descriptionValidationProvider")
     void testFilmController_addFilm_WithVariousDescriptions_ShouldValidateCorrectly(String description, boolean shouldBeValid) throws Exception {
-        validFilmDto.setDescription(description);
+        validUpdateFilmRequestDto.setDescription(description);
 
         if (shouldBeValid) {
             Film filmWithDesc = new Film();
             filmWithDesc.setId(1L);
-            filmWithDesc.setName(validFilmDto.getName());
+            filmWithDesc.setName(validUpdateFilmRequestDto.getName());
             filmWithDesc.setDescription(description);
-            filmWithDesc.setReleaseDate(validFilmDto.getReleaseDate());
-            filmWithDesc.setDuration(validFilmDto.getDuration());
+            filmWithDesc.setReleaseDate(validUpdateFilmRequestDto.getReleaseDate());
+            filmWithDesc.setDuration(validUpdateFilmRequestDto.getDuration());
             filmWithDesc.setRating(FilmRating.PG_13);
             filmWithDesc.setGenres(new HashSet<>());
             FilmDto filmWithDescDto = FilmMapper.mapToFilmDto(filmWithDesc);
 
-            when(filmService.createFilm(any(Film.class))).thenReturn(filmWithDescDto);
+            when(filmService.createFilm(any(NewFilmRequestDto.class))).thenReturn(filmWithDescDto);
         }
 
         var result = mockMvc.perform(post("/films")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(validFilmDto)));
+                .content(objectMapper.writeValueAsString(validUpdateFilmRequestDto)));
 
         if (shouldBeValid) {
             result.andExpect(status().isCreated());
-            verify(filmService, times(1)).createFilm(any(Film.class));
+            verify(filmService, times(1)).createFilm(any(NewFilmRequestDto.class));
         } else {
             result.andExpect(status().isBadRequest());
-            verify(filmService, never()).createFilm(any(Film.class));
+            verify(filmService, never()).createFilm(any(NewFilmRequestDto.class));
         }
     }
 
     private static Stream<Arguments> invalidFilmProvider() {
-        FilmDto nullNameFilm = new FilmDto();
+        UpdateFilmRequestDto nullNameFilm = new UpdateFilmRequestDto();
         nullNameFilm.setId(2L);
         nullNameFilm.setName(null);
         nullNameFilm.setDescription("Test");
         nullNameFilm.setReleaseDate(LocalDate.now());
         nullNameFilm.setDuration(120);
 
-        FilmDto emptyNameFilm = new FilmDto();
+        UpdateFilmRequestDto emptyNameFilm = new UpdateFilmRequestDto();
         emptyNameFilm.setId(3L);
         emptyNameFilm.setName("");
         emptyNameFilm.setDescription("Test");
         emptyNameFilm.setReleaseDate(LocalDate.now());
         emptyNameFilm.setDuration(120);
 
-        FilmDto blankNameFilm = new FilmDto();
+        UpdateFilmRequestDto blankNameFilm = new UpdateFilmRequestDto();
         blankNameFilm.setId(4L);
         blankNameFilm.setName("   ");
         blankNameFilm.setDescription("Test");
         blankNameFilm.setReleaseDate(LocalDate.now());
         blankNameFilm.setDuration(120);
 
-        FilmDto nullReleaseDateFilm = new FilmDto();
+        UpdateFilmRequestDto nullReleaseDateFilm = new UpdateFilmRequestDto();
         nullReleaseDateFilm.setId(5L);
         nullReleaseDateFilm.setName("Test");
         nullReleaseDateFilm.setDescription("Test");
         nullReleaseDateFilm.setReleaseDate(null);
         nullReleaseDateFilm.setDuration(120);
 
-        FilmDto nullDurationFilm = new FilmDto();
+        UpdateFilmRequestDto nullDurationFilm = new UpdateFilmRequestDto();
         nullDurationFilm.setId(6L);
         nullDurationFilm.setName("Test");
         nullDurationFilm.setDescription("Test");

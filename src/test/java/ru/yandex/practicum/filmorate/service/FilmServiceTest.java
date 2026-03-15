@@ -15,9 +15,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.exceptions.NoFilmFoundException;
 import ru.yandex.practicum.filmorate.exceptions.NoUserFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.FilmRating;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
@@ -56,6 +58,7 @@ class FilmServiceTest {
         film1.setReleaseDate(releaseDate);
         film1.setDuration(120);
         film1.setLikedByUsers(new HashSet<>());
+        film1.setRating(FilmRating.PG_13);
 
         film2 = new Film();
         film2.setId(2L);
@@ -64,6 +67,7 @@ class FilmServiceTest {
         film2.setReleaseDate(releaseDate);
         film2.setDuration(90);
         film2.setLikedByUsers(new HashSet<>());
+        film2.setRating(FilmRating.PG_13);
 
         film3 = new Film();
         film3.setId(3L);
@@ -72,6 +76,7 @@ class FilmServiceTest {
         film3.setReleaseDate(releaseDate);
         film3.setDuration(150);
         film3.setLikedByUsers(new HashSet<>());
+        film3.setRating(FilmRating.PG_13);
 
         user1 = new User();
         user1.setId(1L);
@@ -98,7 +103,7 @@ class FilmServiceTest {
         when(userService.getUserById(1L)).thenReturn(user1);
         when(filmStorage.update(any(Film.class))).thenAnswer(i -> i.getArgument(0));
 
-        Film result = filmService.likeFilm(1L, 1L);
+        FilmDto result = filmService.likeFilm(1L, 1L);
 
         assertTrue(result.getLikedByUsers().contains(1L));
         assertEquals(1, result.getLikedByUsers().size());
@@ -116,7 +121,7 @@ class FilmServiceTest {
         when(userService.getUserById(1L)).thenReturn(user1);
         when(filmStorage.update(any(Film.class))).thenAnswer(i -> i.getArgument(0));
 
-        Film result = filmService.likeFilm(1L, 1L);
+        FilmDto result = filmService.likeFilm(1L, 1L);
 
         assertTrue(result.getLikedByUsers().contains(1L));
         assertEquals(1, result.getLikedByUsers().size());
@@ -159,7 +164,7 @@ class FilmServiceTest {
         when(userService.getUserById(1L)).thenReturn(user1);
         when(filmStorage.update(any(Film.class))).thenAnswer(i -> i.getArgument(0));
 
-        Film result = filmService.likeFilm(1L, 1L);
+        FilmDto result = filmService.likeFilm(1L, 1L);
 
         assertNotNull(result);
         assertEquals(1L, result.getId());
@@ -175,7 +180,7 @@ class FilmServiceTest {
         when(userService.getUserById(1L)).thenReturn(user1);
         when(filmStorage.update(any(Film.class))).thenAnswer(i -> i.getArgument(0));
 
-        Film result = filmService.unlikeFilm(1L, 1L);
+        FilmDto result = filmService.unlikeFilm(1L, 1L);
 
         assertFalse(result.getLikedByUsers().contains(1L));
         assertEquals(0, result.getLikedByUsers().size());
@@ -191,7 +196,7 @@ class FilmServiceTest {
         when(userService.getUserById(1L)).thenReturn(user1);
         when(filmStorage.update(any(Film.class))).thenAnswer(i -> i.getArgument(0));
 
-        Film result = filmService.unlikeFilm(1L, 1L);
+        FilmDto result = filmService.unlikeFilm(1L, 1L);
 
         assertFalse(result.getLikedByUsers().contains(1L));
         assertEquals(0, result.getLikedByUsers().size());
@@ -236,7 +241,7 @@ class FilmServiceTest {
         when(userService.getUserById(1L)).thenReturn(user1);
         when(filmStorage.update(any(Film.class))).thenAnswer(i -> i.getArgument(0));
 
-        Film result = filmService.unlikeFilm(1L, 1L);
+        FilmDto result = filmService.unlikeFilm(1L, 1L);
 
         assertNotNull(result);
         assertEquals(1L, result.getId());
@@ -257,10 +262,10 @@ class FilmServiceTest {
 
         when(filmStorage.findMostPopularFilms(3)).thenReturn(popularFilms);
 
-        List<Film> result = filmService.getPopularFilms(3);
+        List<FilmDto> result = filmService.getPopularFilms(3);
 
         assertEquals(3, result.size());
-        Iterator<Film> iterator = result.iterator();
+        Iterator<FilmDto> iterator = result.iterator();
         assertEquals(1L, iterator.next().getId());
         assertEquals(2L, iterator.next().getId());
         assertEquals(3L, iterator.next().getId());
@@ -279,7 +284,7 @@ class FilmServiceTest {
 
         when(filmStorage.findMostPopularFilms(2)).thenReturn(popularFilms);
 
-        List<Film> result = filmService.getPopularFilms(2);
+        List<FilmDto> result = filmService.getPopularFilms(2);
 
         assertEquals(2, result.size());
         verify(filmStorage).findMostPopularFilms(2);
@@ -289,7 +294,7 @@ class FilmServiceTest {
     void getPopularFilms_ShouldReturnEmptySet_WhenNoFilmsExist() {
         when(filmStorage.findMostPopularFilms(10)).thenReturn(new ArrayList<>());
 
-        List<Film> result = filmService.getPopularFilms(10);
+        List<FilmDto> result = filmService.getPopularFilms(10);
 
         assertTrue(result.isEmpty());
         verify(filmStorage).findMostPopularFilms(10);
@@ -308,7 +313,7 @@ class FilmServiceTest {
 
         when(filmStorage.findMostPopularFilms(10)).thenReturn(allFilms);
 
-        List<Film> result = filmService.getPopularFilms(10);
+        List<FilmDto> result = filmService.getPopularFilms(10);
 
         assertEquals(3, result.size());
         verify(filmStorage).findMostPopularFilms(10);
@@ -327,7 +332,7 @@ class FilmServiceTest {
 
         when(filmStorage.findMostPopularFilms(3)).thenReturn(popularFilms);
 
-        List<Film> result = filmService.getPopularFilms(3);
+        List<FilmDto> result = filmService.getPopularFilms(3);
 
         assertEquals(3, result.size());
         verify(filmStorage).findMostPopularFilms(3);

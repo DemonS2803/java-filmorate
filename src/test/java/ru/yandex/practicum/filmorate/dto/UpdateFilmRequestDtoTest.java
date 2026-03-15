@@ -23,11 +23,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class FilmDtoTest {
+public class UpdateFilmRequestDtoTest {
 
     private final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
-    private FilmDto film;
+    private UpdateFilmRequestDto film;
 
     @BeforeEach
     void setup() {
@@ -40,7 +40,7 @@ public class FilmDtoTest {
     void testFilmDtoValidation_whenNameIsBlank(String invalidName) {
         film.setName(invalidName);
 
-        Set<ConstraintViolation<FilmDto>> violations = validator.validate(film);
+        Set<ConstraintViolation<UpdateFilmRequestDto>> violations = validator.validate(film);
 
         assertFalse(violations.isEmpty());
         assertTrue(violations.stream()
@@ -52,7 +52,7 @@ public class FilmDtoTest {
     void testFilmDtoValidation_whenReleaseDateIsInvalid(LocalDate invalidDate) {
         film.setReleaseDate(invalidDate);
 
-        Set<ConstraintViolation<FilmDto>> violations = validator.validate(film);
+        Set<ConstraintViolation<UpdateFilmRequestDto>> violations = validator.validate(film);
 
         assertFalse(violations.isEmpty());
         assertTrue(violations.stream()
@@ -65,7 +65,7 @@ public class FilmDtoTest {
     void testFilmDtoValidation_whenReleaseDateIsValid(LocalDate validDate) {
         film.setReleaseDate(validDate);
 
-        Set<ConstraintViolation<FilmDto>> violations = validator.validate(film);
+        Set<ConstraintViolation<UpdateFilmRequestDto>> violations = validator.validate(film);
 
         assertTrue(violations.stream()
                 .noneMatch(v -> v.getPropertyPath().toString().equals("releaseDate")));
@@ -109,7 +109,7 @@ public class FilmDtoTest {
     void testFilmDtoValidation_whenInvalidDuration(Integer invalidDuration) {
         film.setDuration(invalidDuration);
 
-        Set<ConstraintViolation<FilmDto>> violations = validator.validate(film);
+        Set<ConstraintViolation<UpdateFilmRequestDto>> violations = validator.validate(film);
 
         assertFalse(violations.isEmpty());
         assertTrue(violations.stream()
@@ -123,8 +123,8 @@ public class FilmDtoTest {
         );
     }
 
-    private FilmDto createValidFilm() {
-        FilmDto film = new FilmDto();
+    private UpdateFilmRequestDto createValidFilm() {
+        UpdateFilmRequestDto film = new UpdateFilmRequestDto();
         film.setId(1L);
         film.setName("film");
         film.setDescription("description");

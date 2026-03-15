@@ -3,12 +3,13 @@ package ru.yandex.practicum.filmorate.service;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.boot.autoconfigure.context.ConfigurationPropertiesAutoConfiguration;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
+import ru.yandex.practicum.filmorate.dto.NewFilmRequestDto;
+import ru.yandex.practicum.filmorate.dto.UpdateFilmRequestDto;
 import ru.yandex.practicum.filmorate.dto.FilmGenreDto;
 import ru.yandex.practicum.filmorate.exceptions.NoFilmFoundException;
 import ru.yandex.practicum.filmorate.exceptions.NoFilmRatingFoundException;
@@ -25,7 +26,6 @@ public class FilmService {
     private final FilmStorage filmStorage;
     private final UserService userService;
     private final FilmGenreService filmGenreService;
-    private final ConfigurationPropertiesAutoConfiguration configurationPropertiesAutoConfiguration;
 
     public List<FilmDto> getFilms() {
         log.debug("Get all films");
@@ -42,7 +42,8 @@ public class FilmService {
                 .orElseThrow(() -> new NoFilmFoundException("No film with id " + id + " found"));
     }
 
-    public FilmDto createFilm(Film film) {
+    public FilmDto createFilm(NewFilmRequestDto dto) {
+        Film film = FilmMapper.mapToFilm(dto);
         log.info("Create film: {}", film);
         // validations
         checkFilmGenresExists(film);
@@ -53,7 +54,8 @@ public class FilmService {
         return convertToDto(savedFilm);
     }
 
-    public FilmDto updateFilm(Film film) {
+    public FilmDto updateFilm(UpdateFilmRequestDto dto) {
+        Film film = FilmMapper.mapToFilm(dto);
         // check for film exists
         getFilmById(film.getId());
         // validations
@@ -65,7 +67,7 @@ public class FilmService {
         return convertToDto(updatedFilm);
     }
 
-    public Film likeFilm(Long userId, Long filmId) {
+    public FilmDto likeFilm(Long userId, Long filmId) {
         log.info("Like film: {}", filmId);
         Film film = getFilmByIdOrThrow(filmId);
         // check for user exists
@@ -74,10 +76,10 @@ public class FilmService {
         film.getLikedByUsers().add(userId);
         film = filmStorage.update(film);
 
-        return film;
+        return FilmMapper.mapToFilmDto(film);
     }
 
-    public Film unlikeFilm(Long userId, Long filmId) {
+    public FilmDto unlikeFilm(Long userId, Long filmId) {
         log.info("Unlike film: {}", filmId);
         Film film = getFilmByIdOrThrow(filmId);
         // check for user exists
@@ -86,16 +88,18 @@ public class FilmService {
         film.getLikedByUsers().remove(userId);
         film = filmStorage.update(film);
 
-        return film;
+        return FilmMapper.mapToFilmDto(film);
     }
 
-    public List<Film> getPopularFilms(Integer count) {
+    public List<FilmDto> getPopularFilms(Integer count) {
         log.debug("Get popular films");
         if (count == null || count <= 0) {
             log.error("Get popular films: count must be greater than 0");
             return new ArrayList<>();
         }
-        return filmStorage.findMostPopularFilms(count);
+        return filmStorage.findMostPopularFilms(count).stream()
+                .map(FilmMapper::mapToFilmDto)
+                .toList();
     }
 
     private FilmDto convertToDto(Film film) {
