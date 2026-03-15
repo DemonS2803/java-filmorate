@@ -19,9 +19,12 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import ru.yandex.practicum.filmorate.dto.NewUserRequestDto;
+import ru.yandex.practicum.filmorate.dto.UpdateUserRequestDto;
 import ru.yandex.practicum.filmorate.dto.UserDto;
 import ru.yandex.practicum.filmorate.exceptions.InvalidUserDataException;
 import ru.yandex.practicum.filmorate.exceptions.NoUserFoundException;
+import ru.yandex.practicum.filmorate.mapper.UserMapper;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -47,18 +50,26 @@ public class UserControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    private UserDto validUserDto;
+    private UpdateUserRequestDto validUpdateUserRequestDto;
+    private NewUserRequestDto validNewUserRequestDto;
     private User validUser;
+    private UserDto validUserDto;
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
     @BeforeEach
     void setUp() throws Exception {
-        validUserDto = new UserDto();
-        validUserDto.setId(1L);
-        validUserDto.setEmail("user@example.com");
-        validUserDto.setLogin("login");
-        validUserDto.setName("username");
-        validUserDto.setBirthday(dateFormat.parse("1990-01-01"));
+        validUpdateUserRequestDto = new UpdateUserRequestDto();
+        validUpdateUserRequestDto.setId(1L);
+        validUpdateUserRequestDto.setEmail("user@example.com");
+        validUpdateUserRequestDto.setLogin("login");
+        validUpdateUserRequestDto.setName("username");
+        validUpdateUserRequestDto.setBirthday(dateFormat.parse("1990-01-01"));
+
+        validNewUserRequestDto = new NewUserRequestDto();
+        validNewUserRequestDto.setEmail("user@example.com");
+        validNewUserRequestDto.setLogin("login");
+        validNewUserRequestDto.setName("username");
+        validNewUserRequestDto.setBirthday(dateFormat.parse("1990-01-01"));
 
         validUser = new User();
         validUser.setId(1L);
@@ -66,6 +77,7 @@ public class UserControllerTest {
         validUser.setLogin("login");
         validUser.setName("username");
         validUser.setBirthday(dateFormat.parse("1990-01-01"));
+        validUserDto = UserMapper.mapToUserDto(validUser);
     }
 
     @Test
@@ -83,16 +95,16 @@ public class UserControllerTest {
     @Test
     void testUserController_addUser_And_GetUsers_ShouldWorkTogether() throws Exception {
         // Mock create user
-        when(userService.createUser(any(User.class))).thenReturn(validUser);
+        when(userService.createUser(any(NewUserRequestDto.class))).thenReturn(validUserDto);
 
         // Mock get users
-        List<User> usersList = Collections.singletonList(validUser);
+        List<UserDto> usersList = Collections.singletonList(validUserDto);
         when(userService.getUsers()).thenReturn(usersList);
 
         // Test add user
         mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(validUserDto)))
+                        .content(objectMapper.writeValueAsString(validNewUserRequestDto)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(1)))
                 .andExpect(jsonPath("$.email", is("user@example.com")))
@@ -107,30 +119,31 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$[0].email", is("user@example.com")))
                 .andExpect(jsonPath("$[0].login", is("login")));
 
-        verify(userService, times(1)).createUser(any(User.class));
+        verify(userService, times(1)).createUser(any(NewUserRequestDto.class));
         verify(userService, times(1)).getUsers();
     }
 
     @Test
     void testUserController_addUser_WithoutId_ShouldGenerateNewId() throws Exception {
-        validUserDto.setId(null);
+        validUpdateUserRequestDto.setId(null);
 
         User firstCreatedUser = new User();
         firstCreatedUser.setId(1L);
-        firstCreatedUser.setEmail(validUserDto.getEmail());
-        firstCreatedUser.setLogin(validUserDto.getLogin());
-        firstCreatedUser.setName(validUserDto.getName());
-        firstCreatedUser.setBirthday(validUserDto.getBirthday());
+        firstCreatedUser.setEmail(validUpdateUserRequestDto.getEmail());
+        firstCreatedUser.setLogin(validUpdateUserRequestDto.getLogin());
+        firstCreatedUser.setName(validUpdateUserRequestDto.getName());
+        firstCreatedUser.setBirthday(validUpdateUserRequestDto.getBirthday());
+        UserDto firstUserDto = UserMapper.mapToUserDto(firstCreatedUser);
 
-        when(userService.createUser(any(User.class))).thenReturn(firstCreatedUser);
+        when(userService.createUser(any(NewUserRequestDto.class))).thenReturn(firstUserDto);
 
         mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(validUserDto)))
+                        .content(objectMapper.writeValueAsString(validUpdateUserRequestDto)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(1)));
 
-        UserDto secondUser = new UserDto();
+        UpdateUserRequestDto secondUser = new UpdateUserRequestDto();
         secondUser.setEmail("second@example.com");
         secondUser.setLogin("secondLogin");
         secondUser.setName("Second User");
@@ -142,8 +155,9 @@ public class UserControllerTest {
         secondCreatedUser.setLogin("secondLogin");
         secondCreatedUser.setName("Second User");
         secondCreatedUser.setBirthday(dateFormat.parse("1995-01-01"));
+        UserDto secondUserDto = UserMapper.mapToUserDto(secondCreatedUser);
 
-        when(userService.createUser(any(User.class))).thenReturn(secondCreatedUser);
+        when(userService.createUser(any(NewUserRequestDto.class))).thenReturn(secondUserDto);
 
         mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -151,20 +165,20 @@ public class UserControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(2)));
 
-        verify(userService, times(2)).createUser(any(User.class));
+        verify(userService, times(2)).createUser(any(NewUserRequestDto.class));
     }
 
     @Test
     void testUserController_addUser_WithExistingId_ShouldUseProvidedId() throws Exception {
-        when(userService.createUser(any(User.class))).thenReturn(validUser);
+        when(userService.createUser(any(NewUserRequestDto.class))).thenReturn(validUserDto);
 
         mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(validUserDto)))
+                        .content(objectMapper.writeValueAsString(validUpdateUserRequestDto)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(1)));
 
-        UserDto duplicateUser = new UserDto();
+        UpdateUserRequestDto duplicateUser = new UpdateUserRequestDto();
         duplicateUser.setId(1L);
         duplicateUser.setEmail("duplicate@example.com");
         duplicateUser.setLogin("duplicateLogin");
@@ -178,7 +192,7 @@ public class UserControllerTest {
         duplicateCreatedUser.setName("Duplicate User");
         duplicateCreatedUser.setBirthday(dateFormat.parse("2000-01-01"));
 
-        when(userService.createUser(any(User.class))).thenReturn(duplicateCreatedUser);
+        when(userService.createUser(any(NewUserRequestDto.class))).thenReturn(UserMapper.mapToUserDto(duplicateCreatedUser));
 
         mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -187,26 +201,26 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$.id", is(1))) // ID remains 1 as provided
                 .andExpect(jsonPath("$.email", is("duplicate@example.com")));
 
-        verify(userService, times(2)).createUser(any(User.class));
+        verify(userService, times(2)).createUser(any(NewUserRequestDto.class));
     }
 
     @Test
     void testUserController_updateUser_ShouldUpdateExistingUser() throws Exception {
         // First create a user
-        when(userService.createUser(any(User.class))).thenReturn(validUser);
+        when(userService.createUser(any(NewUserRequestDto.class))).thenReturn(validUserDto);
 
         mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(validUserDto)))
+                        .content(objectMapper.writeValueAsString(validUpdateUserRequestDto)))
                 .andExpect(status().isOk());
 
         // Prepare updated user
-        UserDto updatedUserDto = new UserDto();
-        updatedUserDto.setId(1L);
-        updatedUserDto.setEmail("updated@example.com");
-        updatedUserDto.setLogin("updatedLogin");
-        updatedUserDto.setName("Updated Name");
-        updatedUserDto.setBirthday(dateFormat.parse("1985-01-01"));
+        UpdateUserRequestDto updatedUpdateUserRequestDto = new UpdateUserRequestDto();
+        updatedUpdateUserRequestDto.setId(1L);
+        updatedUpdateUserRequestDto.setEmail("updated@example.com");
+        updatedUpdateUserRequestDto.setLogin("updatedLogin");
+        updatedUpdateUserRequestDto.setName("Updated Name");
+        updatedUpdateUserRequestDto.setBirthday(dateFormat.parse("1985-01-01"));
 
         User updatedUser = new User();
         updatedUser.setId(1L);
@@ -214,18 +228,19 @@ public class UserControllerTest {
         updatedUser.setLogin("updatedLogin");
         updatedUser.setName("Updated Name");
         updatedUser.setBirthday(dateFormat.parse("1985-01-01"));
+        UserDto updatedUserDto = UserMapper.mapToUserDto(updatedUser);
 
         // Mock update
-        when(userService.updateUser(any(User.class))).thenReturn(updatedUser);
+        when(userService.updateUser(any(UpdateUserRequestDto.class))).thenReturn(updatedUserDto);
 
         // Mock get users after update
-        List<User> usersAfterUpdate = Collections.singletonList(updatedUser);
+        List<UserDto> usersAfterUpdate = Collections.singletonList(updatedUserDto);
         when(userService.getUsers()).thenReturn(usersAfterUpdate);
 
         // Test update
         mockMvc.perform(put("/users")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updatedUserDto)))
+                        .content(objectMapper.writeValueAsString(updatedUpdateUserRequestDto)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(1)))
                 .andExpect(jsonPath("$.email", is("updated@example.com")))
@@ -238,72 +253,72 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$[0].email", is("updated@example.com")))
                 .andExpect(jsonPath("$[0].login", is("updatedLogin")));
 
-        verify(userService, times(1)).createUser(any(User.class));
-        verify(userService, times(1)).updateUser(any(User.class));
+        verify(userService, times(1)).createUser(any(NewUserRequestDto.class));
+        verify(userService, times(1)).updateUser(any(UpdateUserRequestDto.class));
         verify(userService, times(1)).getUsers();
     }
 
     @Test
     void testUserController_updateUser_WithoutId_ShouldReturnBadRequest() throws Exception {
-        validUserDto.setId(null);
+        validUpdateUserRequestDto.setId(null);
 
-        when(userService.updateUser(any(User.class)))
+        when(userService.updateUser(any(UpdateUserRequestDto.class)))
                 .thenThrow(new InvalidUserDataException("User id is empty. Failed to update user"));
 
         mockMvc.perform(put("/users")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(validUserDto)))
+                        .content(objectMapper.writeValueAsString(validUpdateUserRequestDto)))
                 .andExpect(status().isBadRequest());
 
-        verify(userService, times(1)).updateUser(any(User.class));
+        verify(userService, times(1)).updateUser(any(UpdateUserRequestDto.class));
     }
 
     @Test
     void testUserController_updateUser_WithNonExistingId_ShouldReturnNotFound() throws Exception {
-        validUserDto.setId(999L);
+        validUpdateUserRequestDto.setId(999L);
 
-        when(userService.updateUser(any(User.class)))
+        when(userService.updateUser(any(UpdateUserRequestDto.class)))
                 .thenThrow(new NoUserFoundException("User not found"));
 
         mockMvc.perform(put("/users")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(validUserDto)))
+                        .content(objectMapper.writeValueAsString(validUpdateUserRequestDto)))
                 .andExpect(status().isNotFound());
 
-        verify(userService, times(1)).updateUser(any(User.class));
+        verify(userService, times(1)).updateUser(any(UpdateUserRequestDto.class));
     }
 
     @ParameterizedTest
     @MethodSource("invalidUserProvider")
-    void testUserController_addUser_WithInvalidData_ShouldReturnBadRequest(UserDto invalidUserDto) throws Exception {
+    void testUserController_addUser_WithInvalidData_ShouldReturnBadRequest(UpdateUserRequestDto invalidUpdateUserRequestDto) throws Exception {
         mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(invalidUserDto)))
+                        .content(objectMapper.writeValueAsString(invalidUpdateUserRequestDto)))
                 .andExpect(status().isBadRequest());
 
-        verify(userService, never()).createUser(any(User.class));
+        verify(userService, never()).createUser(any(NewUserRequestDto.class));
     }
 
     @ParameterizedTest
     @MethodSource("invalidUserProvider")
-    void testUserController_updateUser_WithInvalidData_ShouldReturnBadRequest(UserDto invalidUserDto) throws Exception {
+    void testUserController_updateUser_WithInvalidData_ShouldReturnBadRequest(UpdateUserRequestDto invalidUpdateUserRequestDto) throws Exception {
         // Create existing user first
-        when(userService.createUser(any(User.class))).thenReturn(validUser);
+        when(userService.createUser(any(NewUserRequestDto.class))).thenReturn(validUserDto);
 
         mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(validUserDto)))
+                        .content(objectMapper.writeValueAsString(validUpdateUserRequestDto)))
                 .andExpect(status().isOk());
 
         // Try to update with invalid data
-        invalidUserDto.setId(1L);
+        invalidUpdateUserRequestDto.setId(1L);
 
         mockMvc.perform(put("/users")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(invalidUserDto)))
+                        .content(objectMapper.writeValueAsString(invalidUpdateUserRequestDto)))
                 .andExpect(status().isBadRequest());
 
-        verify(userService, never()).updateUser(any(User.class));
+        verify(userService, never()).updateUser(any(UpdateUserRequestDto.class));
     }
 
     @ParameterizedTest
@@ -314,24 +329,23 @@ public class UserControllerTest {
             "123@example.com"
     })
     void testUserController_addUser_WithValidEmails_ShouldSucceed(String email) throws Exception {
-        validUserDto.setEmail(email);
+        validUpdateUserRequestDto.setEmail(email);
 
         User userWithEmail = new User();
         userWithEmail.setId(1L);
         userWithEmail.setEmail(email);
-        userWithEmail.setLogin(validUserDto.getLogin());
-        userWithEmail.setName(validUserDto.getName());
-        userWithEmail.setBirthday(validUserDto.getBirthday());
+        userWithEmail.setLogin(validUpdateUserRequestDto.getLogin());
+        userWithEmail.setName(validUpdateUserRequestDto.getName());
+        userWithEmail.setBirthday(validUpdateUserRequestDto.getBirthday());
 
-        when(userService.createUser(any(User.class))).thenReturn(userWithEmail);
-
+        when(userService.createUser(any(NewUserRequestDto.class))).thenReturn(UserMapper.mapToUserDto(userWithEmail));
         mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(validUserDto)))
+                        .content(objectMapper.writeValueAsString(validUpdateUserRequestDto)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.email", is(email)));
 
-        verify(userService, times(1)).createUser(any(User.class));
+        verify(userService, times(1)).createUser(any(NewUserRequestDto.class));
     }
 
     @ParameterizedTest
@@ -344,37 +358,37 @@ public class UserControllerTest {
             "user name@domain.com"
     })
     void testUserController_addUser_WithInvalidEmails_ShouldReject(String email) throws Exception {
-        validUserDto.setEmail(email);
+        validUpdateUserRequestDto.setEmail(email);
 
         mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(validUserDto)))
+                        .content(objectMapper.writeValueAsString(validUpdateUserRequestDto)))
                 .andExpect(status().isBadRequest());
 
-        verify(userService, never()).createUser(any(User.class));
+        verify(userService, never()).createUser(any(NewUserRequestDto.class));
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"login", "user123", "john_doe"})
     void testUserController_addUser_WithValidLogins_ShouldSucceed(String login) throws Exception {
-        validUserDto.setLogin(login);
+        validUpdateUserRequestDto.setLogin(login);
 
         User userWithLogin = new User();
         userWithLogin.setId(1L);
-        userWithLogin.setEmail(validUserDto.getEmail());
+        userWithLogin.setEmail(validUpdateUserRequestDto.getEmail());
         userWithLogin.setLogin(login);
-        userWithLogin.setName(validUserDto.getName());
-        userWithLogin.setBirthday(validUserDto.getBirthday());
+        userWithLogin.setName(validUpdateUserRequestDto.getName());
+        userWithLogin.setBirthday(validUpdateUserRequestDto.getBirthday());
 
-        when(userService.createUser(any(User.class))).thenReturn(userWithLogin);
+        when(userService.createUser(any(NewUserRequestDto.class))).thenReturn(UserMapper.mapToUserDto(userWithLogin));
 
         mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(validUserDto)))
+                        .content(objectMapper.writeValueAsString(validUpdateUserRequestDto)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.login", is(login)));
 
-        verify(userService, times(1)).createUser(any(User.class));
+        verify(userService, times(1)).createUser(any(NewUserRequestDto.class));
     }
 
     @ParameterizedTest
@@ -387,14 +401,14 @@ public class UserControllerTest {
             "  login  "
     })
     void testUserController_addUser_WithInvalidLogins_ShouldReject(String login) throws Exception {
-        validUserDto.setLogin(login);
+        validUpdateUserRequestDto.setLogin(login);
 
         mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(validUserDto)))
+                        .content(objectMapper.writeValueAsString(validUpdateUserRequestDto)))
                 .andExpect(status().isBadRequest());
 
-        verify(userService, never()).createUser(any(User.class));
+        verify(userService, never()).createUser(any(NewUserRequestDto.class));
     }
 
     @ParameterizedTest
@@ -406,24 +420,24 @@ public class UserControllerTest {
     })
     void testUserController_addUser_WithValidBirthdays_ShouldSucceed(String dateString) throws Exception {
         Date birthday = new Date(dateFormat.parse(dateString).getTime() + 30000000);
-        validUserDto.setBirthday(birthday);
+        validUpdateUserRequestDto.setBirthday(birthday);
 
         User userWithBirthday = new User();
         userWithBirthday.setId(1L);
-        userWithBirthday.setEmail(validUserDto.getEmail());
-        userWithBirthday.setLogin(validUserDto.getLogin());
-        userWithBirthday.setName(validUserDto.getName());
+        userWithBirthday.setEmail(validUpdateUserRequestDto.getEmail());
+        userWithBirthday.setLogin(validUpdateUserRequestDto.getLogin());
+        userWithBirthday.setName(validUpdateUserRequestDto.getName());
         userWithBirthday.setBirthday(birthday);
 
-        when(userService.createUser(any(User.class))).thenReturn(userWithBirthday);
+        when(userService.createUser(any(NewUserRequestDto.class))).thenReturn(UserMapper.mapToUserDto(userWithBirthday));
 
         mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(validUserDto)))
+                        .content(objectMapper.writeValueAsString(validUpdateUserRequestDto)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.birthday", is(dateFormat.format(birthday))));
 
-        verify(userService, times(1)).createUser(any(User.class));
+        verify(userService, times(1)).createUser(any(NewUserRequestDto.class));
     }
 
     @ParameterizedTest
@@ -434,120 +448,120 @@ public class UserControllerTest {
     })
     void testUserController_addUser_WithInvalidBirthdays_ShouldReject(String dateString) throws Exception {
         Date birthday = dateFormat.parse(dateString);
-        validUserDto.setBirthday(birthday);
+        validUpdateUserRequestDto.setBirthday(birthday);
 
         mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(validUserDto)))
+                        .content(objectMapper.writeValueAsString(validUpdateUserRequestDto)))
                 .andExpect(status().isBadRequest());
 
-        verify(userService, never()).createUser(any(User.class));
+        verify(userService, never()).createUser(any(NewUserRequestDto.class));
     }
 
     @ParameterizedTest
     @MethodSource("emailValidationProvider")
     void testUserController_addUser_WithVariousEmails_ShouldValidateCorrectly(String email, boolean shouldBeValid) throws Exception {
-        validUserDto.setEmail(email);
+        validUpdateUserRequestDto.setEmail(email);
 
         if (shouldBeValid) {
             User userWithEmail = new User();
             userWithEmail.setId(1L);
             userWithEmail.setEmail(email);
-            userWithEmail.setLogin(validUserDto.getLogin());
-            userWithEmail.setName(validUserDto.getName());
-            userWithEmail.setBirthday(validUserDto.getBirthday());
+            userWithEmail.setLogin(validUpdateUserRequestDto.getLogin());
+            userWithEmail.setName(validUpdateUserRequestDto.getName());
+            userWithEmail.setBirthday(validUpdateUserRequestDto.getBirthday());
 
-            when(userService.createUser(any(User.class))).thenReturn(userWithEmail);
+            when(userService.createUser(any(NewUserRequestDto.class))).thenReturn(UserMapper.mapToUserDto(userWithEmail));
         }
 
         var result = mockMvc.perform(post("/users")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(validUserDto)));
+                .content(objectMapper.writeValueAsString(validUpdateUserRequestDto)));
 
         if (shouldBeValid) {
             result.andExpect(status().isOk());
-            verify(userService, times(1)).createUser(any(User.class));
+            verify(userService, times(1)).createUser(any(NewUserRequestDto.class));
         } else {
             result.andExpect(status().isBadRequest());
-            verify(userService, never()).createUser(any(User.class));
+            verify(userService, never()).createUser(any(NewUserRequestDto.class));
         }
     }
 
     @ParameterizedTest
     @MethodSource("loginValidationProvider")
     void testUserController_addUser_WithVariousLogins_ShouldValidateCorrectly(String login, boolean shouldBeValid) throws Exception {
-        validUserDto.setLogin(login);
+        validUpdateUserRequestDto.setLogin(login);
 
         if (shouldBeValid) {
             User userWithLogin = new User();
             userWithLogin.setId(1L);
-            userWithLogin.setEmail(validUserDto.getEmail());
+            userWithLogin.setEmail(validUpdateUserRequestDto.getEmail());
             userWithLogin.setLogin(login);
-            userWithLogin.setName(validUserDto.getName());
-            userWithLogin.setBirthday(validUserDto.getBirthday());
+            userWithLogin.setName(validUpdateUserRequestDto.getName());
+            userWithLogin.setBirthday(validUpdateUserRequestDto.getBirthday());
 
-            when(userService.createUser(any(User.class))).thenReturn(userWithLogin);
+            when(userService.createUser(any(NewUserRequestDto.class))).thenReturn(UserMapper.mapToUserDto(userWithLogin));
         }
 
         var result = mockMvc.perform(post("/users")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(validUserDto)));
+                .content(objectMapper.writeValueAsString(validUpdateUserRequestDto)));
 
         if (shouldBeValid) {
             result.andExpect(status().isOk());
-            verify(userService, times(1)).createUser(any(User.class));
+            verify(userService, times(1)).createUser(any(NewUserRequestDto.class));
         } else {
             result.andExpect(status().isBadRequest());
-            verify(userService, never()).createUser(any(User.class));
+            verify(userService, never()).createUser(any(NewUserRequestDto.class));
         }
     }
 
     private static Stream<Arguments> invalidUserProvider() throws Exception {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
-        UserDto nullEmailUser = new UserDto();
+        UpdateUserRequestDto nullEmailUser = new UpdateUserRequestDto();
         nullEmailUser.setId(2L);
         nullEmailUser.setEmail(null);
         nullEmailUser.setLogin("login");
         nullEmailUser.setName("Test User");
         nullEmailUser.setBirthday(dateFormat.parse("1990-01-01"));
 
-        UserDto emptyEmailUser = new UserDto();
+        UpdateUserRequestDto emptyEmailUser = new UpdateUserRequestDto();
         emptyEmailUser.setId(3L);
         emptyEmailUser.setEmail("");
         emptyEmailUser.setLogin("login");
         emptyEmailUser.setName("Test User");
         emptyEmailUser.setBirthday(dateFormat.parse("1990-01-01"));
 
-        UserDto invalidEmailUser = new UserDto();
+        UpdateUserRequestDto invalidEmailUser = new UpdateUserRequestDto();
         invalidEmailUser.setId(4L);
         invalidEmailUser.setEmail("invalid-email");
         invalidEmailUser.setLogin("login");
         invalidEmailUser.setName("Test User");
         invalidEmailUser.setBirthday(dateFormat.parse("1990-01-01"));
 
-        UserDto nullLoginUser = new UserDto();
+        UpdateUserRequestDto nullLoginUser = new UpdateUserRequestDto();
         nullLoginUser.setId(5L);
         nullLoginUser.setEmail("user@example.com");
         nullLoginUser.setLogin(null);
         nullLoginUser.setName("Test User");
         nullLoginUser.setBirthday(dateFormat.parse("1990-01-01"));
 
-        UserDto emptyLoginUser = new UserDto();
+        UpdateUserRequestDto emptyLoginUser = new UpdateUserRequestDto();
         emptyLoginUser.setId(6L);
         emptyLoginUser.setEmail("user@example.com");
         emptyLoginUser.setLogin("");
         emptyLoginUser.setName("Test User");
         emptyLoginUser.setBirthday(dateFormat.parse("1990-01-01"));
 
-        UserDto whitespaceLoginUser = new UserDto();
+        UpdateUserRequestDto whitespaceLoginUser = new UpdateUserRequestDto();
         whitespaceLoginUser.setId(7L);
         whitespaceLoginUser.setEmail("user@example.com");
         whitespaceLoginUser.setLogin("login with spaces");
         whitespaceLoginUser.setName("Test User");
         whitespaceLoginUser.setBirthday(dateFormat.parse("1990-01-01"));
 
-        UserDto futureBirthdayUser = new UserDto();
+        UpdateUserRequestDto futureBirthdayUser = new UpdateUserRequestDto();
         futureBirthdayUser.setId(8L);
         futureBirthdayUser.setEmail("user@example.com");
         futureBirthdayUser.setLogin("login");

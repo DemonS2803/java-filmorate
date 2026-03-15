@@ -16,11 +16,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import ru.yandex.practicum.filmorate.dto.FilmDto;
+import ru.yandex.practicum.filmorate.dto.UserDto;
 import ru.yandex.practicum.filmorate.exceptions.NoFilmFoundException;
 import ru.yandex.practicum.filmorate.exceptions.NoUserFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmRating;
-import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -42,9 +42,9 @@ class FilmServiceTest {
     private Film film1;
     private Film film2;
     private Film film3;
-    private User user1;
-    private User user2;
-    private User user3;
+    private UserDto user1;
+    private UserDto user2;
+    private UserDto user3;
     private LocalDate releaseDate;
 
     @BeforeEach
@@ -78,23 +78,23 @@ class FilmServiceTest {
         film3.setLikedByUsers(new HashSet<>());
         film3.setRating(FilmRating.PG_13);
 
-        user1 = new User();
+        user1 = new UserDto();
         user1.setId(1L);
         user1.setEmail("user1@test.com");
         user1.setLogin("user1");
-        user1.setName("User One");
+        user1.setName("UserDto One");
 
-        user2 = new User();
+        user2 = new UserDto();
         user2.setId(2L);
         user2.setEmail("user2@test.com");
         user2.setLogin("user2");
-        user2.setName("User Two");
+        user2.setName("UserDto Two");
 
-        user3 = new User();
+        user3 = new UserDto();
         user3.setId(3L);
         user3.setEmail("user3@test.com");
         user3.setLogin("user3");
-        user3.setName("User Three");
+        user3.setName("UserDto Three");
     }
 
     @Test

@@ -11,7 +11,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import ru.yandex.practicum.filmorate.dto.UserDto;
 import ru.yandex.practicum.filmorate.exceptions.NoUserFoundException;
+import ru.yandex.practicum.filmorate.mapper.UserMapper;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -70,7 +72,7 @@ class UserServiceTest {
         when(userStorage.update(any(User.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        User result = userService.addToFriend(1L, 2L);
+        UserDto result = userService.addToFriend(1L, 2L);
         result = userService.addToFriend(2L, 1L);
 
         assertTrue(user1.getFriends().contains(2L));
@@ -120,7 +122,7 @@ class UserServiceTest {
         when(userStorage.update(any(User.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        User result = userService.addToFriend(1L, 2L);
+        UserDto result = userService.addToFriend(1L, 2L);
         result = userService.addToFriend(2L, 1L);
 
         assertTrue(user1.getFriends().contains(2L));
@@ -141,7 +143,7 @@ class UserServiceTest {
         when(userStorage.update(any(User.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        User result = userService.addToFriend(1L, 2L);
+        UserDto result = userService.addToFriend(1L, 2L);
 
         assertTrue(user1.getFriends().contains(2L));
         assertFalse(user2.getFriends().contains(1L));
@@ -161,7 +163,7 @@ class UserServiceTest {
         when(userStorage.update(any(User.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        User result = userService.removeFromFriends(1L, 2L);
+        UserDto result = userService.removeFromFriends(1L, 2L);
         result = userService.removeFromFriends(2L, 1L);
 
         assertFalse(user1.getFriends().contains(2L));
@@ -181,7 +183,7 @@ class UserServiceTest {
         when(userStorage.update(any(User.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        User result = userService.removeFromFriends(1L, 2L);
+        UserDto result = userService.removeFromFriends(1L, 2L);
         result = userService.removeFromFriends(2L, 1L);
 
         assertFalse(user1.getFriends().contains(2L));
@@ -214,11 +216,11 @@ class UserServiceTest {
         when(userStorage.findUserById(2L)).thenReturn(Optional.ofNullable(user2));
         when(userStorage.findUserById(3L)).thenReturn(Optional.ofNullable(user3));
 
-        Set<User> friends = userService.getUserFriends(1L);
+        Set<UserDto> friends = userService.getUserFriends(1L);
 
         assertEquals(2, friends.size());
-        assertTrue(friends.contains(user2));
-        assertTrue(friends.contains(user3));
+        assertTrue(friends.contains(UserMapper.mapToUserDto(user2)));
+        assertTrue(friends.contains(UserMapper.mapToUserDto(user3)));
 
         verify(userStorage).findUserById(1L);
         verify(userStorage).findUserById(2L);
@@ -229,7 +231,7 @@ class UserServiceTest {
     void getUserFriends_ShouldReturnEmptySet_WhenUserHasNoFriends() {
         when(userStorage.findUserById(1L)).thenReturn(Optional.ofNullable(user1));
 
-        Set<User> friends = userService.getUserFriends(1L);
+        Set<UserDto> friends = userService.getUserFriends(1L);
 
         assertTrue(friends.isEmpty());
 
@@ -258,10 +260,10 @@ class UserServiceTest {
         when(userStorage.findUserById(2L)).thenReturn(Optional.ofNullable(user2));
         when(userStorage.findUserById(3L)).thenReturn(Optional.ofNullable(user3));
 
-        Set<User> commonFriends = userService.getCommonFriends(1L, 2L);
+        Set<UserDto> commonFriends = userService.getCommonFriends(1L, 2L);
 
         assertEquals(1, commonFriends.size());
-        assertTrue(commonFriends.contains(user3));
+        assertTrue(commonFriends.contains(UserMapper.mapToUserDto(user3)));
 
         verify(userStorage).findUserById(1L);
         verify(userStorage).findUserById(2L);
@@ -276,7 +278,7 @@ class UserServiceTest {
         when(userStorage.findUserById(1L)).thenReturn(Optional.ofNullable(user1));
         when(userStorage.findUserById(2L)).thenReturn(Optional.ofNullable(user2));
 
-        Set<User> commonFriends = userService.getCommonFriends(1L, 2L);
+        Set<UserDto> commonFriends = userService.getCommonFriends(1L, 2L);
 
         assertTrue(commonFriends.isEmpty());
 
@@ -292,7 +294,7 @@ class UserServiceTest {
         when(userStorage.findUserById(1L)).thenReturn(Optional.ofNullable(user1));
         when(userStorage.findUserById(2L)).thenReturn(Optional.ofNullable(user2));
 
-        Set<User> commonFriends = userService.getCommonFriends(1L, 2L);
+        Set<UserDto> commonFriends = userService.getCommonFriends(1L, 2L);
 
         assertTrue(commonFriends.isEmpty());
 
@@ -332,7 +334,7 @@ class UserServiceTest {
         when(userStorage.update(any(User.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        User result = userService.addToFriend(1L, 2L);
+        UserDto result = userService.addToFriend(1L, 2L);
 
         // Assert
         assertNotNull(result);
@@ -350,7 +352,7 @@ class UserServiceTest {
         when(userStorage.update(any(User.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        User result = userService.removeFromFriends(1L, 2L);
+        UserDto result = userService.removeFromFriends(1L, 2L);
 
         assertNotNull(result);
         assertEquals(1L, result.getId());

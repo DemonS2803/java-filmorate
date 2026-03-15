@@ -18,11 +18,11 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class UserDtoTest {
+public class UpdateUserRequestDtoTest {
 
     private Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
-    private UserDto user;
+    private UpdateUserRequestDto user;
 
     @BeforeEach
     void setup() {
@@ -35,7 +35,7 @@ public class UserDtoTest {
     void testUserDtoValidation_whenEmailIsBlank(String invalidEmail) {
         user.setEmail(invalidEmail);
 
-        Set<ConstraintViolation<UserDto>> violations = validator.validate(user);
+        Set<ConstraintViolation<UpdateUserRequestDto>> violations = validator.validate(user);
 
         assertFalse(violations.isEmpty());
         assertTrue(violations.stream()
@@ -55,7 +55,7 @@ public class UserDtoTest {
     void testUserDtoValidation_whenEmailIsInvalid(String invalidEmail) {
         user.setEmail(invalidEmail);
 
-        Set<ConstraintViolation<UserDto>> violations = validator.validate(user);
+        Set<ConstraintViolation<UpdateUserRequestDto>> violations = validator.validate(user);
 
         assertFalse(violations.isEmpty());
         assertTrue(violations.stream()
@@ -73,7 +73,7 @@ public class UserDtoTest {
     void testUserDtoValidation_whenEmailIsValid(String validEmail) {
         user.setEmail(validEmail);
 
-        Set<ConstraintViolation<UserDto>> violations = validator.validate(user);
+        Set<ConstraintViolation<UpdateUserRequestDto>> violations = validator.validate(user);
 
         assertTrue(violations.stream()
                 .noneMatch(v -> v.getPropertyPath().toString().equals("email")));
@@ -85,7 +85,7 @@ public class UserDtoTest {
     void testUserDtoValidation_whenLoginIsBlank(String invalidLogin) {
         user.setLogin(invalidLogin);
 
-        Set<ConstraintViolation<UserDto>> violations = validator.validate(user);
+        Set<ConstraintViolation<UpdateUserRequestDto>> violations = validator.validate(user);
 
         assertFalse(violations.isEmpty());
         assertTrue(violations.stream()
@@ -105,7 +105,7 @@ public class UserDtoTest {
     void testUserDtoValidation_whenLoginContainsWhitespace(String invalidLogin) {
         user.setLogin(invalidLogin);
 
-        Set<ConstraintViolation<UserDto>> violations = validator.validate(user);
+        Set<ConstraintViolation<UpdateUserRequestDto>> violations = validator.validate(user);
 
         assertFalse(violations.isEmpty());
         assertTrue(violations.stream()
@@ -118,7 +118,7 @@ public class UserDtoTest {
     void testUserDtoValidation_whenLoginIsValid(String validLogin) {
         user.setLogin(validLogin);
 
-        Set<ConstraintViolation<UserDto>> violations = validator.validate(user);
+        Set<ConstraintViolation<UpdateUserRequestDto>> violations = validator.validate(user);
 
         assertTrue(violations.stream()
                 .noneMatch(v -> v.getPropertyPath().toString().equals("login")));
@@ -129,7 +129,7 @@ public class UserDtoTest {
     void testUserDtoValidation_whenBirthdayIsInvalid(Date invalidBirthday) {
         user.setBirthday(invalidBirthday);
 
-        Set<ConstraintViolation<UserDto>> violations = validator.validate(user);
+        Set<ConstraintViolation<UpdateUserRequestDto>> violations = validator.validate(user);
 
         assertFalse(violations.isEmpty());
         assertTrue(violations.stream()
@@ -145,7 +145,7 @@ public class UserDtoTest {
     void testUserDtoValidation_whenBirthdayIsValid(Date validBirthday) {
         user.setBirthday(validBirthday);
 
-        Set<ConstraintViolation<UserDto>> violations = validator.validate(user);
+        Set<ConstraintViolation<UpdateUserRequestDto>> violations = validator.validate(user);
 
         assertTrue(violations.stream()
                 .noneMatch(v -> v.getPropertyPath().toString().equals("birthday")));
@@ -180,8 +180,8 @@ public class UserDtoTest {
         }
     }
 
-    private UserDto createValidUser() {
-        UserDto user = new UserDto();
+    private UpdateUserRequestDto createValidUser() {
+        UpdateUserRequestDto user = new UpdateUserRequestDto();
         user.setId(1L);
         user.setEmail("user@example.com");
         user.setLogin("validLogin");
