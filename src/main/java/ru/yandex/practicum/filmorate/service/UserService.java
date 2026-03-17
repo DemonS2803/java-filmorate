@@ -36,7 +36,7 @@ public class UserService {
         return UserMapper.mapToUserDto(getUserByIdOrThrow(id));
     }
 
-    private User getUserByIdOrThrow(Long id) {
+    protected User getUserByIdOrThrow(Long id) {
         log.debug("Get user by id: {}", id);
         return userStorage.findUserById(id)
                 .orElseThrow(() -> new NoUserFoundException("No user with id " + id + " found"));
@@ -58,10 +58,11 @@ public class UserService {
     }
 
     public Set<UserDto> getUserFriends(long userId) {
+        getUserByIdOrThrow(userId);
+
         log.debug("Get user friends: {}", userId);
-        return getUserById(userId).getFriends().stream()
-                .map(this::getUserById)
-                .filter(friend -> friend.getId() != userId)
+        return userStorage.findUserFriends(userId).stream()
+                .map(UserMapper::mapToUserDto)
                 .collect(Collectors.toSet());
     }
 
@@ -72,9 +73,11 @@ public class UserService {
 
         checkNotEquals(user, friend, "User can't make friends with himself");
 
-        user.getFriends().add(friendId);
-
-        user = userStorage.update(user);
+        boolean isCreated = userStorage.addFriend(userId, friendId);
+        if (!isCreated) {
+            log.error("Can't add friend {} to user {}", friendId, userId);
+        }
+        user = getUserByIdOrThrow(userId);
 
         return UserMapper.mapToUserDto(user);
     }
@@ -87,9 +90,11 @@ public class UserService {
 
         checkNotEquals(user, friend, "User can't remove himself from friends");
 
-        user.getFriends().remove(friendId);
-
-        user = userStorage.update(user);
+        boolean isDeleted = userStorage.removeFriend(userId, friendId);
+        if (!isDeleted) {
+            log.error("Can't remove friend {} from user {}", friendId, userId);
+        }
+        user = getUserByIdOrThrow(userId);
 
         return UserMapper.mapToUserDto(user);
     }
@@ -101,11 +106,8 @@ public class UserService {
 
         checkNotEquals(user, another, "User can't get common friends with himself");
 
-        Set<Long> commonFriends = user.getFriends();
-        commonFriends.retainAll(another.getFriends());
-
-        return commonFriends.stream()
-                .map(this::getUserById)
+        return userStorage.findCommonFriends(userId, anotherUserId).stream()
+                .map(UserMapper::mapToUserDto)
                 .collect(Collectors.toSet());
     }
 
