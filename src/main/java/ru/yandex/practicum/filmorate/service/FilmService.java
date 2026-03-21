@@ -10,7 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dto.NewFilmRequestDto;
 import ru.yandex.practicum.filmorate.dto.UpdateFilmRequestDto;
-import ru.yandex.practicum.filmorate.dto.FilmGenreDto;
 import ru.yandex.practicum.filmorate.exceptions.NoFilmFoundException;
 import ru.yandex.practicum.filmorate.exceptions.NoFilmRatingFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
@@ -29,17 +28,22 @@ public class FilmService {
 
     public List<FilmDto> getFilms() {
         log.debug("Get all films");
-        return filmStorage.findAll().stream().map(this::convertToDto).toList();
+        return filmStorage.findAll().stream().map(FilmMapper::mapToFilmDto).toList();
     }
 
     public FilmDto getFilmById(final long id) {
         log.debug("Get film by id: {}", id);
-        return convertToDto(getFilmByIdOrThrow(id));
+        FilmDto dto = FilmMapper.mapToFilmDto(getFilmByIdOrThrow(id));
+        dto.setGenres(filmGenreService.getFilmGenresByFilmId(id));
+        return dto;
     }
 
     private Film getFilmByIdOrThrow(long id) {
-        return filmStorage.findFilmById(id)
+        Film film = filmStorage.findFilmById(id)
                 .orElseThrow(() -> new NoFilmFoundException("No film with id " + id + " found"));
+        film.setGenres(filmGenreService.getFilmGenresIdsByFilmId(id));
+        film.setLikedByUsers(filmStorage.findFilmLikedBy(id));
+        return film;
     }
 
     public FilmDto createFilm(NewFilmRequestDto dto) {
@@ -49,9 +53,10 @@ public class FilmService {
         checkFilmGenresExists(film);
         checkFilmRatingValid(film);
 
-        Film savedFilm = filmStorage.save(film);
+        film = filmStorage.save(film);
+        filmGenreService.saveFilmGenresForFilm(film.getId(), film.getGenres());
 
-        return convertToDto(savedFilm);
+        return getFilmById(film.getId());
     }
 
     public FilmDto updateFilm(UpdateFilmRequestDto dto) {
@@ -63,32 +68,32 @@ public class FilmService {
         checkFilmRatingValid(film);
 
         log.info("Update film: {}", film);
-        Film updatedFilm = filmStorage.update(film);
-        return convertToDto(updatedFilm);
+        film = filmStorage.update(film);
+        filmGenreService.saveFilmGenresForFilm(film.getId(), film.getGenres());
+
+        return getFilmById(film.getId());
     }
 
     public FilmDto likeFilm(Long userId, Long filmId) {
         log.info("Like film: {}", filmId);
-        Film film = getFilmByIdOrThrow(filmId);
+        getFilmByIdOrThrow(filmId);
         // check for user exists
         userService.getUserById(userId);
 
-        film.getLikedByUsers().add(userId);
-        film = filmStorage.update(film);
+        filmStorage.likeFilm(filmId, userId);
 
-        return FilmMapper.mapToFilmDto(film);
+        return getFilmById(filmId);
     }
 
     public FilmDto unlikeFilm(Long userId, Long filmId) {
         log.info("Unlike film: {}", filmId);
-        Film film = getFilmByIdOrThrow(filmId);
+        getFilmByIdOrThrow(filmId);
         // check for user exists
         userService.getUserById(userId);
 
-        film.getLikedByUsers().remove(userId);
-        film = filmStorage.update(film);
+        filmStorage.unlikeFilm(filmId, userId);
 
-        return FilmMapper.mapToFilmDto(film);
+        return getFilmById(filmId);
     }
 
     public List<FilmDto> getPopularFilms(Integer count) {
@@ -100,13 +105,6 @@ public class FilmService {
         return filmStorage.findMostPopularFilms(count).stream()
                 .map(FilmMapper::mapToFilmDto)
                 .toList();
-    }
-
-    private FilmDto convertToDto(Film film) {
-        log.debug("Convert {} to DTO object", film);
-        FilmDto dto = FilmMapper.mapToFilmDto(film);
-        loadFilmGenresToDto(dto, film);
-        return dto;
     }
 
     private void checkFilmGenresExists(Film film) {
@@ -123,12 +121,6 @@ public class FilmService {
         if (FilmRating.valueOf(film.getRating().getId()) == null) {
             throw new NoFilmRatingFoundException("No Film rating found for id: " + film.getRating().getId());
         }
-    }
-
-    private void loadFilmGenresToDto(FilmDto dto, Film film) {
-        List<FilmGenreDto> filmGenres = filmGenreService.getFilmGenresByIds(film.getGenres());
-        log.debug("Load film genres to dto: {}", filmGenres);
-        dto.setGenres(filmGenres);
     }
 
 }

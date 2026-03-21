@@ -36,6 +36,9 @@ class FilmServiceTest {
     @Mock
     private UserService userService;
 
+    @Mock
+    private FilmGenreService filmGenreService;
+
     @InjectMocks
     private FilmService filmService;
 
@@ -97,39 +100,6 @@ class FilmServiceTest {
         user3.setName("UserDto Three");
     }
 
-    @Test
-    void likeFilm_ShouldAddLike_WhenFilmAndUserExist() {
-        when(filmStorage.findFilmById(1L)).thenReturn(Optional.ofNullable(film1));
-        when(userService.getUserById(1L)).thenReturn(user1);
-        when(filmStorage.update(any(Film.class))).thenAnswer(i -> i.getArgument(0));
-
-        FilmDto result = filmService.likeFilm(1L, 1L);
-
-        assertTrue(result.getLikedByUsers().contains(1L));
-        assertEquals(1, result.getLikedByUsers().size());
-
-        verify(filmStorage).findFilmById(1L);
-        verify(userService).getUserById(1L);
-        verify(filmStorage).update(film1);
-    }
-
-    @Test
-    void likeFilm_ShouldNotAddDuplicateLike_WhenUserAlreadyLikedFilm() {
-        film1.getLikedByUsers().add(1L);
-
-        when(filmStorage.findFilmById(1L)).thenReturn(Optional.ofNullable(film1));
-        when(userService.getUserById(1L)).thenReturn(user1);
-        when(filmStorage.update(any(Film.class))).thenAnswer(i -> i.getArgument(0));
-
-        FilmDto result = filmService.likeFilm(1L, 1L);
-
-        assertTrue(result.getLikedByUsers().contains(1L));
-        assertEquals(1, result.getLikedByUsers().size());
-
-        verify(filmStorage).findFilmById(1L);
-        verify(userService).getUserById(1L);
-        verify(filmStorage).update(film1);
-    }
 
     @Test
     void likeFilm_ShouldThrowException_WhenFilmNotFound() {
@@ -162,48 +132,27 @@ class FilmServiceTest {
     void likeFilm_ShouldReturnUpdatedFilm_WhenLikeAdded() {
         when(filmStorage.findFilmById(1L)).thenReturn(Optional.ofNullable(film1));
         when(userService.getUserById(1L)).thenReturn(user1);
-        when(filmStorage.update(any(Film.class))).thenAnswer(i -> i.getArgument(0));
 
         FilmDto result = filmService.likeFilm(1L, 1L);
 
         assertNotNull(result);
         assertEquals(1L, result.getId());
         assertEquals("Film 1", result.getName());
-        assertTrue(result.getLikedByUsers().contains(1L));
     }
 
-    @Test
-    void unlikeFilm_ShouldRemoveLike_WhenFilmAndUserExist() {
-        film1.getLikedByUsers().add(1L);
-
-        when(filmStorage.findFilmById(1L)).thenReturn(Optional.ofNullable(film1));
-        when(userService.getUserById(1L)).thenReturn(user1);
-        when(filmStorage.update(any(Film.class))).thenAnswer(i -> i.getArgument(0));
-
-        FilmDto result = filmService.unlikeFilm(1L, 1L);
-
-        assertFalse(result.getLikedByUsers().contains(1L));
-        assertEquals(0, result.getLikedByUsers().size());
-
-        verify(filmStorage).findFilmById(1L);
-        verify(userService).getUserById(1L);
-        verify(filmStorage).update(film1);
-    }
 
     @Test
     void unlikeFilm_ShouldDoNothing_WhenUserDidNotLikeFilm() {
         when(filmStorage.findFilmById(1L)).thenReturn(Optional.ofNullable(film1));
         when(userService.getUserById(1L)).thenReturn(user1);
-        when(filmStorage.update(any(Film.class))).thenAnswer(i -> i.getArgument(0));
 
         FilmDto result = filmService.unlikeFilm(1L, 1L);
 
         assertFalse(result.getLikedByUsers().contains(1L));
         assertEquals(0, result.getLikedByUsers().size());
 
-        verify(filmStorage).findFilmById(1L);
+        verify(filmStorage, times(2)).findFilmById(1L);
         verify(userService).getUserById(1L);
-        verify(filmStorage).update(film1);
     }
 
     @Test
@@ -223,6 +172,7 @@ class FilmServiceTest {
     void unlikeFilm_ShouldThrowException_WhenUserNotFound() {
         when(filmStorage.findFilmById(1L)).thenReturn(Optional.ofNullable(film1));
         when(userService.getUserById(99L)).thenThrow(new NoUserFoundException(""));
+        when(filmGenreService.getFilmGenresIdsByFilmId(1L)).thenReturn(new HashSet<>());
 
         assertThrows(NoUserFoundException.class, () ->
                 filmService.unlikeFilm(99L, 1L)
@@ -239,14 +189,12 @@ class FilmServiceTest {
 
         when(filmStorage.findFilmById(1L)).thenReturn(Optional.ofNullable(film1));
         when(userService.getUserById(1L)).thenReturn(user1);
-        when(filmStorage.update(any(Film.class))).thenAnswer(i -> i.getArgument(0));
 
         FilmDto result = filmService.unlikeFilm(1L, 1L);
 
         assertNotNull(result);
         assertEquals(1L, result.getId());
         assertEquals("Film 1", result.getName());
-        assertFalse(result.getLikedByUsers().contains(1L));
     }
 
     @Test

@@ -66,6 +66,7 @@ public class FilmMapper {
         dto.setLikedByUsers(film.getLikedByUsers());
         dto.setMpa(FilmRatingMapper.toDto(film.getRating(), FilmRatingService.FILM_RATING_LOCALE));
         dto.setGenres(new ArrayList<>());
+
         return dto;
     }
 

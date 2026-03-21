@@ -47,4 +47,20 @@ public class FilmGenreService {
                 .orElseThrow(() -> new NoFilmGenreFoundException("No film genre with id " + id + " was found"));
     }
 
+    public Set<Long> getFilmGenresIdsByFilmId(Long filmId) {
+        return filmGenreStorage.findFilmGenresIdsByFilmId(filmId);
+    }
+
+    public List<FilmGenreDto> getFilmGenresByFilmId(Long filmId) {
+        // TODO: make one query
+        return filmGenreStorage.findFilmGenresIdsByFilmId(filmId).stream()
+                .map(this::getFilmGenreById)
+                .sorted(Comparator.comparing(FilmGenreDto::getId))
+                .collect(Collectors.toList());
+    }
+
+    public void saveFilmGenresForFilm(Long filmId, Set<Long> genresIds) {
+        filmGenreStorage.saveFilmGenresForFilm(filmId, genresIds);
+    }
+
 }
