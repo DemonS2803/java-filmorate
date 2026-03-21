@@ -1,14 +1,12 @@
 package ru.yandex.practicum.filmorate.model;
 
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import ru.yandex.practicum.filmorate.dto.UserDto;
 
 /**
  * User.
@@ -25,23 +23,5 @@ public class User {
     @JsonFormat(pattern = "yyyy-MM-dd")
     Date birthday;
     Set<Long> friends;
-
-    public static User of(UserDto dto) {
-        User user = new User();
-        user.id = dto.getId();
-        user.email = dto.getEmail();
-        user.login = dto.getLogin();
-        if (dto.getName() != null) {
-            user.name = dto.getName();
-        } else {
-            user.name = dto.getLogin();
-        }
-        user.birthday = dto.getBirthday();
-        user.friends = new HashSet<>();
-        if (dto.getFriends() != null && !dto.getFriends().isEmpty()) {
-            user.friends.addAll(dto.getFriends());
-        }
-        return user;
-    }
 
 }

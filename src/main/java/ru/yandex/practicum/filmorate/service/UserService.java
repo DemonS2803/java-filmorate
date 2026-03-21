@@ -9,9 +9,14 @@ import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import ru.yandex.practicum.filmorate.dto.NewUserRequestDto;
+import ru.yandex.practicum.filmorate.dto.UpdateUserRequestDto;
+import ru.yandex.practicum.filmorate.dto.UserDto;
 import ru.yandex.practicum.filmorate.exceptions.InvalidUserDataException;
 import ru.yandex.practicum.filmorate.exceptions.NoUserFoundException;
+import ru.yandex.practicum.filmorate.mapper.UserMapper;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.UserFriendsStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 
@@ -21,87 +26,90 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 public class UserService {
 
     private final UserStorage userStorage;
+    private final UserFriendsStorage userFriendsStorage;
 
-    public List<User> getUsers() {
-        return userStorage.findAll();
+    public List<UserDto> getUsers() {
+        return userStorage.findAll().stream()
+                .map(UserMapper::mapToUserDto)
+                .toList();
     }
 
-    public User getUserById(long id) {
+    public UserDto getUserById(long id) {
+        return UserMapper.mapToUserDto(getUserByIdOrThrow(id));
+    }
+
+    protected User getUserByIdOrThrow(Long id) {
         log.debug("Get user by id: {}", id);
-        return getUserByIdOrThrow(id);
-    }
-
-    private User getUserByIdOrThrow(Long id) {
         return userStorage.findUserById(id)
                 .orElseThrow(() -> new NoUserFoundException("No user with id " + id + " found"));
     }
 
-    public User createUser(User user) {
+    public UserDto createUser(NewUserRequestDto createDto) {
+        User user = UserMapper.mapToUser(createDto);
         log.info("Create user: {}", user);
-        return userStorage.save(user);
+        return UserMapper.mapToUserDto(userStorage.save(user));
     }
 
-    public User updateUser(User user) {
+    public UserDto updateUser(UpdateUserRequestDto updateDto) {
+        User user = UserMapper.mapToUser(updateDto);
         // check for user exists
         getUserById(user.getId());
 
         log.info("Update user: {}", user);
-        return userStorage.update(user);
+        return UserMapper.mapToUserDto(userStorage.update(user));
     }
 
-    public Set<User> getUserFriends(long userId) {
+    public Set<UserDto> getUserFriends(long userId) {
+        getUserByIdOrThrow(userId);
+
         log.debug("Get user friends: {}", userId);
-        return getUserById(userId).getFriends().stream()
-                .map(this::getUserById)
-                .filter(friend -> friend.getId() != userId)
+        return userFriendsStorage.findUserFriends(userId).stream()
+                .map(UserMapper::mapToUserDto)
                 .collect(Collectors.toSet());
     }
 
-    public User addToFriend(Long userId, Long friendId) {
+    public UserDto addToFriend(Long userId, Long friendId) {
         log.info("User {} make friends with {}", userId, friendId);
-        User user = getUserById(userId);
-        User friend = getUserById(friendId);
+        User user = getUserByIdOrThrow(userId);
+        User friend = getUserByIdOrThrow(friendId);
 
         checkNotEquals(user, friend, "User can't make friends with himself");
 
+        boolean isAdded = userFriendsStorage.addFriend(userId, friendId);
         user.getFriends().add(friendId);
-        friend.getFriends().add(userId);
+        if (!isAdded) {
+            log.error("Can't add friend {} to user {}", friendId, userId);
+        }
 
-        user = userStorage.update(user);
-        userStorage.update(friend);
-
-        return user;
+        return UserMapper.mapToUserDto(user);
     }
 
 
-    public User removeFromFriends(Long userId, Long friendId) {
+    public UserDto removeFromFriends(Long userId, Long friendId) {
         log.info("User {} remove {} from friends", userId, friendId);
-        User user = getUserById(userId);
-        User friend = getUserById(friendId);
+        User user = getUserByIdOrThrow(userId);
+        User friend = getUserByIdOrThrow(friendId);
 
         checkNotEquals(user, friend, "User can't remove himself from friends");
 
+        boolean isDeleted = userFriendsStorage.removeFriend(userId, friendId);
         user.getFriends().remove(friendId);
-        friend.getFriends().remove(userId);
+        if (!isDeleted) {
+            log.error("Can't remove friend {} from user {}", friendId, userId);
+        }
 
-        user = userStorage.update(user);
-        userStorage.update(friend);
-
-        return user;
+        return UserMapper.mapToUserDto(user);
     }
 
-    public Set<User> getCommonFriends(Long userId, Long anotherUserId) {
+    public Set<UserDto> getCommonFriends(Long userId, Long anotherUserId) {
         log.debug("Get common friends for {} and {}", userId, anotherUserId);
-        User user = getUserById(userId);
-        User another = getUserById(anotherUserId);
+        User user = getUserByIdOrThrow(userId);
+        User another = getUserByIdOrThrow(anotherUserId);
 
         checkNotEquals(user, another, "User can't get common friends with himself");
 
-        Set<Long> commonFriends = user.getFriends();
-        commonFriends.retainAll(another.getFriends());
-
-        return commonFriends.stream()
-                .map(this::getUserById)
+        return userFriendsStorage.findCommonFriends(userId, anotherUserId).stream()
+                .map(UserMapper::mapToUserDto)
                 .collect(Collectors.toSet());
     }
 

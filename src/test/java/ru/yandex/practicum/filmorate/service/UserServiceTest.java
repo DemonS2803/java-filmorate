@@ -11,8 +11,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import ru.yandex.practicum.filmorate.dto.UserDto;
 import ru.yandex.practicum.filmorate.exceptions.NoUserFoundException;
+import ru.yandex.practicum.filmorate.mapper.UserMapper;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.UserFriendsStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -24,6 +27,8 @@ class UserServiceTest {
 
     @Mock
     private UserStorage userStorage;
+    @Mock
+    private UserFriendsStorage userFriendsStorage;
 
     @InjectMocks
     private UserService userService;
@@ -67,19 +72,15 @@ class UserServiceTest {
     void addToFriend_ShouldAddFriendship_WhenBothUsersExist() {
         when(userStorage.findUserById(1L)).thenReturn(Optional.ofNullable(user1));
         when(userStorage.findUserById(2L)).thenReturn(Optional.ofNullable(user2));
-        when(userStorage.update(any(User.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(userFriendsStorage.addFriend(any(Long.class), any(Long.class))).thenReturn(true);
 
-        User result = userService.addToFriend(1L, 2L);
+        UserDto result = userService.addToFriend(1L, 2L);
+        result = userService.addToFriend(2L, 1L);
 
-        assertTrue(user1.getFriends().contains(2L));
-        assertTrue(user2.getFriends().contains(1L));
-        assertEquals(1, user1.getFriends().size());
-        assertEquals(1, user2.getFriends().size());
 
-        verify(userStorage, times(2)).update(any(User.class));
-        verify(userStorage).findUserById(1L);
-        verify(userStorage).findUserById(2L);
+        verify(userFriendsStorage, times(2)).addFriend(any(Long.class), any(Long.class));
+        verify(userStorage, times(2)).findUserById(1L);
+        verify(userStorage, times(2)).findUserById(2L);
     }
 
     @Test
@@ -116,17 +117,34 @@ class UserServiceTest {
 
         when(userStorage.findUserById(1L)).thenReturn(Optional.ofNullable(user1));
         when(userStorage.findUserById(2L)).thenReturn(Optional.ofNullable(user2));
-        when(userStorage.update(any(User.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(userFriendsStorage.addFriend(any(Long.class), any(Long.class))).thenReturn(true);
 
-        User result = userService.addToFriend(1L, 2L);
+        UserDto result = userService.addToFriend(1L, 2L);
+        result = userService.addToFriend(2L, 1L);
 
-        assertTrue(user1.getFriends().contains(2L));
-        assertTrue(user2.getFriends().contains(1L));
         assertEquals(1, user1.getFriends().size());
         assertEquals(1, user2.getFriends().size());
 
-        verify(userStorage, times(2)).update(any(User.class));
+        verify(userFriendsStorage, times(2)).addFriend(any(Long.class), any(Long.class));
+    }
+
+
+    @Test
+    void addToFriend_ShouldNotBeBidirectedFriendship() {
+        user1.getFriends().add(2L);
+
+        when(userStorage.findUserById(1L)).thenReturn(Optional.ofNullable(user1));
+        when(userStorage.findUserById(2L)).thenReturn(Optional.ofNullable(user2));
+        when(userFriendsStorage.addFriend(any(Long.class), any(Long.class))).thenReturn(true);
+
+        UserDto result = userService.addToFriend(1L, 2L);
+
+        assertTrue(user1.getFriends().contains(2L));
+        assertFalse(user2.getFriends().contains(1L));
+        assertEquals(1, user1.getFriends().size());
+        assertEquals(0, user2.getFriends().size());
+
+        verify(userFriendsStorage, times(1)).addFriend(any(Long.class), any(Long.class));
     }
 
     @Test
@@ -136,36 +154,29 @@ class UserServiceTest {
 
         when(userStorage.findUserById(1L)).thenReturn(Optional.ofNullable(user1));
         when(userStorage.findUserById(2L)).thenReturn(Optional.ofNullable(user2));
-        when(userStorage.update(any(User.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(userFriendsStorage.removeFriend(any(Long.class), any(Long.class))).thenReturn(true);
 
-        User result = userService.removeFromFriends(1L, 2L);
+        UserDto result = userService.removeFromFriends(1L, 2L);
+        result = userService.removeFromFriends(2L, 1L);
 
-        assertFalse(user1.getFriends().contains(2L));
-        assertFalse(user2.getFriends().contains(1L));
-        assertEquals(0, user1.getFriends().size());
-        assertEquals(0, user2.getFriends().size());
-
-        verify(userStorage, times(2)).update(any(User.class));
-        verify(userStorage).findUserById(1L);
-        verify(userStorage).findUserById(2L);
+        verify(userFriendsStorage, times(2)).removeFriend(any(Long.class), any(Long.class));
+        verify(userStorage, times(2)).findUserById(1L);
+        verify(userStorage, times(2)).findUserById(2L);
     }
 
     @Test
     void removeFromFriends_ShouldDoNothing_WhenUsersAreNotFriends() {
         when(userStorage.findUserById(1L)).thenReturn(Optional.ofNullable(user1));
         when(userStorage.findUserById(2L)).thenReturn(Optional.ofNullable(user2));
-        when(userStorage.update(any(User.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(userFriendsStorage.removeFriend(any(Long.class), any(Long.class))).thenReturn(true);
 
-        User result = userService.removeFromFriends(1L, 2L);
+        UserDto result = userService.removeFromFriends(1L, 2L);
+        result = userService.removeFromFriends(2L, 1L);
 
-        assertFalse(user1.getFriends().contains(2L));
-        assertFalse(user2.getFriends().contains(1L));
         assertEquals(0, user1.getFriends().size());
         assertEquals(0, user2.getFriends().size());
 
-        verify(userStorage, times(2)).update(any(User.class));
+        verify(userFriendsStorage, times(2)).removeFriend(any(Long.class), any(Long.class));
     }
 
     @Test
@@ -187,25 +198,22 @@ class UserServiceTest {
         user1.getFriends().add(3L);
 
         when(userStorage.findUserById(1L)).thenReturn(Optional.ofNullable(user1));
-        when(userStorage.findUserById(2L)).thenReturn(Optional.ofNullable(user2));
-        when(userStorage.findUserById(3L)).thenReturn(Optional.ofNullable(user3));
+        when(userFriendsStorage.findUserFriends(1L)).thenReturn(List.of(user2, user3));
 
-        Set<User> friends = userService.getUserFriends(1L);
+        Set<UserDto> friends = userService.getUserFriends(1L);
 
         assertEquals(2, friends.size());
-        assertTrue(friends.contains(user2));
-        assertTrue(friends.contains(user3));
+        assertTrue(friends.contains(UserMapper.mapToUserDto(user2)));
+        assertTrue(friends.contains(UserMapper.mapToUserDto(user3)));
 
         verify(userStorage).findUserById(1L);
-        verify(userStorage).findUserById(2L);
-        verify(userStorage).findUserById(3L);
     }
 
     @Test
     void getUserFriends_ShouldReturnEmptySet_WhenUserHasNoFriends() {
         when(userStorage.findUserById(1L)).thenReturn(Optional.ofNullable(user1));
 
-        Set<User> friends = userService.getUserFriends(1L);
+        Set<UserDto> friends = userService.getUserFriends(1L);
 
         assertTrue(friends.isEmpty());
 
@@ -232,16 +240,15 @@ class UserServiceTest {
 
         when(userStorage.findUserById(1L)).thenReturn(Optional.ofNullable(user1));
         when(userStorage.findUserById(2L)).thenReturn(Optional.ofNullable(user2));
-        when(userStorage.findUserById(3L)).thenReturn(Optional.ofNullable(user3));
+        when(userFriendsStorage.findCommonFriends(1L, 2L)).thenReturn(List.of(user3));
 
-        Set<User> commonFriends = userService.getCommonFriends(1L, 2L);
+        Set<UserDto> commonFriends = userService.getCommonFriends(1L, 2L);
 
         assertEquals(1, commonFriends.size());
-        assertTrue(commonFriends.contains(user3));
+        assertTrue(commonFriends.contains(UserMapper.mapToUserDto(user3)));
 
         verify(userStorage).findUserById(1L);
         verify(userStorage).findUserById(2L);
-        verify(userStorage).findUserById(3L);
     }
 
     @Test
@@ -252,7 +259,7 @@ class UserServiceTest {
         when(userStorage.findUserById(1L)).thenReturn(Optional.ofNullable(user1));
         when(userStorage.findUserById(2L)).thenReturn(Optional.ofNullable(user2));
 
-        Set<User> commonFriends = userService.getCommonFriends(1L, 2L);
+        Set<UserDto> commonFriends = userService.getCommonFriends(1L, 2L);
 
         assertTrue(commonFriends.isEmpty());
 
@@ -268,7 +275,7 @@ class UserServiceTest {
         when(userStorage.findUserById(1L)).thenReturn(Optional.ofNullable(user1));
         when(userStorage.findUserById(2L)).thenReturn(Optional.ofNullable(user2));
 
-        Set<User> commonFriends = userService.getCommonFriends(1L, 2L);
+        Set<UserDto> commonFriends = userService.getCommonFriends(1L, 2L);
 
         assertTrue(commonFriends.isEmpty());
 
@@ -305,15 +312,16 @@ class UserServiceTest {
     void addToFriend_ShouldReturnUpdatedUser_WhenFriendshipAdded() {
         when(userStorage.findUserById(1L)).thenReturn(Optional.ofNullable(user1));
         when(userStorage.findUserById(2L)).thenReturn(Optional.ofNullable(user2));
-        when(userStorage.update(any(User.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(userFriendsStorage.addFriend(any(Long.class), any(Long.class))).thenReturn(true);
 
-        User result = userService.addToFriend(1L, 2L);
+        UserDto result = userService.addToFriend(1L, 2L);
 
         // Assert
         assertNotNull(result);
         assertEquals(1L, result.getId());
-        assertTrue(result.getFriends().contains(2L));
+        verify(userStorage, times(1)).findUserById(1L);
+        verify(userStorage, times(1)).findUserById(2L);
+        verify(userFriendsStorage).addFriend(1L, 2L);
     }
 
     @Test
@@ -323,13 +331,11 @@ class UserServiceTest {
 
         when(userStorage.findUserById(1L)).thenReturn(Optional.ofNullable(user1));
         when(userStorage.findUserById(2L)).thenReturn(Optional.ofNullable(user2));
-        when(userStorage.update(any(User.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(userFriendsStorage.removeFriend(any(Long.class), any(Long.class))).thenReturn(true);
 
-        User result = userService.removeFromFriends(1L, 2L);
+        UserDto result = userService.removeFromFriends(1L, 2L);
 
         assertNotNull(result);
         assertEquals(1L, result.getId());
-        assertFalse(result.getFriends().contains(2L));
     }
 }

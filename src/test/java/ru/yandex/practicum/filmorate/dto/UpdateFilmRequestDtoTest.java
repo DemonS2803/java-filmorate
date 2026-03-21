@@ -1,7 +1,8 @@
 package ru.yandex.practicum.filmorate.dto;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -20,11 +21,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class FilmDtoTest {
+public class UpdateFilmRequestDtoTest {
 
     private final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
-    private FilmDto film;
+    private UpdateFilmRequestDto film;
 
     @BeforeEach
     void setup() {
@@ -37,7 +38,7 @@ public class FilmDtoTest {
     void testFilmDtoValidation_whenNameIsBlank(String invalidName) {
         film.setName(invalidName);
 
-        Set<ConstraintViolation<FilmDto>> violations = validator.validate(film);
+        Set<ConstraintViolation<UpdateFilmRequestDto>> violations = validator.validate(film);
 
         assertFalse(violations.isEmpty());
         assertTrue(violations.stream()
@@ -46,10 +47,10 @@ public class FilmDtoTest {
 
     @ParameterizedTest(name = "Дата релиза: {0} -> должна быть невалидной")
     @MethodSource("provideInvalidDates")
-    void testFilmDtoValidation_whenReleaseDateIsInvalid(Date invalidDate) {
+    void testFilmDtoValidation_whenReleaseDateIsInvalid(LocalDate invalidDate) {
         film.setReleaseDate(invalidDate);
 
-        Set<ConstraintViolation<FilmDto>> violations = validator.validate(film);
+        Set<ConstraintViolation<UpdateFilmRequestDto>> violations = validator.validate(film);
 
         assertFalse(violations.isEmpty());
         assertTrue(violations.stream()
@@ -59,16 +60,16 @@ public class FilmDtoTest {
 
     @ParameterizedTest(name = "Дата релиза: {0} -> должна быть валидной")
     @MethodSource("provideValidDates")
-    void testFilmDtoValidation_whenReleaseDateIsValid(Date validDate) {
+    void testFilmDtoValidation_whenReleaseDateIsValid(LocalDate validDate) {
         film.setReleaseDate(validDate);
 
-        Set<ConstraintViolation<FilmDto>> violations = validator.validate(film);
+        Set<ConstraintViolation<UpdateFilmRequestDto>> violations = validator.validate(film);
 
         assertTrue(violations.stream()
                 .noneMatch(v -> v.getPropertyPath().toString().equals("releaseDate")));
     }
 
-    private static Stream<Date> provideInvalidDates() {
+    private static Stream<LocalDate> provideInvalidDates() {
         return Stream.of(
                 createDate(1895, Calendar.DECEMBER, 27),
                 createDate(1895, Calendar.DECEMBER, 26),
@@ -79,7 +80,7 @@ public class FilmDtoTest {
         );
     }
 
-    private static Stream<Date> provideValidDates() {
+    private static Stream<LocalDate> provideValidDates() {
         return Stream.of(
                 createDate(1895, Calendar.DECEMBER, 28),
                 createDate(1895, Calendar.DECEMBER, 29),
@@ -92,11 +93,12 @@ public class FilmDtoTest {
         );
     }
 
-    private static Date createDate(int year, int month, int day) {
+    private static LocalDate createDate(int year, int month, int day) {
         Calendar calendar = Calendar.getInstance();
         calendar.set(year, month - 1, day, 0, 0, 0);
         calendar.set(Calendar.MILLISECOND, 0);
-        return calendar.getTime();
+        LocalDate ld = LocalDate.ofInstant(calendar.toInstant(), calendar.getTimeZone().toZoneId()).atStartOfDay().toLocalDate();
+        return ld;
     }
 
     @ParameterizedTest
@@ -105,7 +107,7 @@ public class FilmDtoTest {
     void testFilmDtoValidation_whenInvalidDuration(Integer invalidDuration) {
         film.setDuration(invalidDuration);
 
-        Set<ConstraintViolation<FilmDto>> violations = validator.validate(film);
+        Set<ConstraintViolation<UpdateFilmRequestDto>> violations = validator.validate(film);
 
         assertFalse(violations.isEmpty());
         assertTrue(violations.stream()
@@ -119,13 +121,15 @@ public class FilmDtoTest {
         );
     }
 
-    private FilmDto createValidFilm() {
-        FilmDto film = new FilmDto();
+    private UpdateFilmRequestDto createValidFilm() {
+        UpdateFilmRequestDto film = new UpdateFilmRequestDto();
         film.setId(1L);
         film.setName("film");
         film.setDescription("description");
-        film.setReleaseDate(new Date());
+        film.setReleaseDate(LocalDate.now());
         film.setDuration(120);
+        film.setGenres(new ArrayList<>());
+        film.setMpa(new FilmRatingDto(2, "PG_13"));
         return film;
     }
 
