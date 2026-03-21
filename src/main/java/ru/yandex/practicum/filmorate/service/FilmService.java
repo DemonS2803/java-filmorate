@@ -14,7 +14,6 @@ import ru.yandex.practicum.filmorate.exceptions.NoFilmFoundException;
 import ru.yandex.practicum.filmorate.exceptions.NoFilmRatingFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.FilmRating;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 @Slf4j
@@ -24,6 +23,7 @@ public class FilmService {
 
     private final FilmStorage filmStorage;
     private final UserService userService;
+    private final FilmRatingService filmRatingService;
     private final FilmGenreService filmGenreService;
 
     public List<FilmDto> getFilms() {
@@ -33,8 +33,10 @@ public class FilmService {
 
     public FilmDto getFilmById(final long id) {
         log.debug("Get film by id: {}", id);
-        FilmDto dto = FilmMapper.mapToFilmDto(getFilmByIdOrThrow(id));
+        Film film = getFilmByIdOrThrow(id);
+        FilmDto dto = FilmMapper.mapToFilmDto(film);
         dto.setGenres(filmGenreService.getFilmGenresByFilmId(id));
+        dto.setMpa(filmRatingService.getFilmRatingById(film.getRating()));
         return dto;
     }
 
@@ -118,9 +120,7 @@ public class FilmService {
         if (film.getRating() == null) {
             throw new NoFilmRatingFoundException("No film rating found");
         }
-        if (FilmRating.valueOf(film.getRating().getId()) == null) {
-            throw new NoFilmRatingFoundException("No Film rating found for id: " + film.getRating().getId());
-        }
+        filmRatingService.getFilmRatingById(film.getRating());
     }
 
 }

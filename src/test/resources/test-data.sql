@@ -3,6 +3,7 @@ delete from film_genres_mapper;
 delete from user_friends;
 delete from users;
 delete from films;
+delete from film_ratings;
 
 alter table users alter column id restart with 1;
 alter table films alter column id restart with 1;
@@ -12,10 +13,17 @@ insert into users (email, login, name, birthday) values
     ('user2@test.com', 'user2', 'User Two', '1991-02-02'),
     ('user3@test.com', 'user3', 'User Three', '1992-03-03');
 
-insert into films (name, description, release_date, duration) values
-    ('Film 1', 'Description 1', '2020-01-01', 120),
-    ('Film 2', 'Description 2', '2021-02-02', 90),
-    ('Film 3', 'Description 3', '2022-03-03', 150);
+insert into film_ratings(name) values
+   ('G'),
+   ('PG'),
+   ('PG-13'),
+   ('R'),
+   ('NC-17');
+
+insert into films (name, description, release_date, duration, rating) values
+    ('Film 1', 'Description 1', '2020-01-01', 120, 2),
+    ('Film 2', 'Description 2', '2021-02-02', 90, 4),
+    ('Film 3', 'Description 3', '2022-03-03', 150, 3);
 
 insert into user_friends (user_id, friend_id) values
     (1, 2),

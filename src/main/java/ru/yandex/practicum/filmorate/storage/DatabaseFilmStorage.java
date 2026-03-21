@@ -53,7 +53,7 @@ public class DatabaseFilmStorage extends DatabaseStorage<Film> implements FilmSt
                 film.getDescription(),
                 film.getReleaseDate(),
                 film.getDuration(),
-                film.getRating().getId()
+                film.getRating()
         );
         film.setId(id);
         log.info("Saved new film with id {}", id);
@@ -70,7 +70,7 @@ public class DatabaseFilmStorage extends DatabaseStorage<Film> implements FilmSt
                 film.getDescription(),
                 film.getReleaseDate() != null ? film.getReleaseDate() : null,
                 film.getDuration(),
-                film.getRating().getId(),
+                film.getRating(),
                 film.getId()
         );
 

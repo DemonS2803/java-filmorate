@@ -20,7 +20,6 @@ import ru.yandex.practicum.filmorate.dto.UserDto;
 import ru.yandex.practicum.filmorate.exceptions.NoFilmFoundException;
 import ru.yandex.practicum.filmorate.exceptions.NoUserFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.FilmRating;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -38,6 +37,9 @@ class FilmServiceTest {
 
     @Mock
     private FilmGenreService filmGenreService;
+
+    @Mock
+    private FilmRatingService filmRatingService;
 
     @InjectMocks
     private FilmService filmService;
@@ -61,7 +63,7 @@ class FilmServiceTest {
         film1.setReleaseDate(releaseDate);
         film1.setDuration(120);
         film1.setLikedByUsers(new HashSet<>());
-        film1.setRating(FilmRating.PG_13);
+        film1.setRating(2);
 
         film2 = new Film();
         film2.setId(2L);
@@ -70,7 +72,7 @@ class FilmServiceTest {
         film2.setReleaseDate(releaseDate);
         film2.setDuration(90);
         film2.setLikedByUsers(new HashSet<>());
-        film2.setRating(FilmRating.PG_13);
+        film2.setRating(2);
 
         film3 = new Film();
         film3.setId(3L);
@@ -79,7 +81,7 @@ class FilmServiceTest {
         film3.setReleaseDate(releaseDate);
         film3.setDuration(150);
         film3.setLikedByUsers(new HashSet<>());
-        film3.setRating(FilmRating.PG_13);
+        film3.setRating(2);
 
         user1 = new UserDto();
         user1.setId(1L);

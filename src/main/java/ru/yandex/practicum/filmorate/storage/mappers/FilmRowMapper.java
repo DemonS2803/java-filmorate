@@ -8,7 +8,6 @@ import java.util.HashSet;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.FilmRating;
 
 @Component
 public class FilmRowMapper implements RowMapper<Film> {
@@ -27,7 +26,7 @@ public class FilmRowMapper implements RowMapper<Film> {
 
         film.setDuration(rs.getInt("duration"));
         film.setLikedByUsers(new HashSet<>());
-        film.setRating(FilmRating.valueOf(rs.getInt("rating")));
+        film.setRating(rs.getInt("rating"));
         film.setGenres(new HashSet<>());
 
         return film;

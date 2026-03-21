@@ -16,8 +16,6 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
-import ru.yandex.practicum.filmorate.mapper.FilmRatingMapper;
-import ru.yandex.practicum.filmorate.model.FilmRating;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -131,7 +129,7 @@ public class UpdateFilmRequestDtoTest {
         film.setReleaseDate(LocalDate.now());
         film.setDuration(120);
         film.setGenres(new ArrayList<>());
-        film.setMpa(FilmRatingMapper.toDto(FilmRating.PG, "ru"));
+        film.setMpa(new FilmRatingDto(2, "PG_13"));
         return film;
     }
 

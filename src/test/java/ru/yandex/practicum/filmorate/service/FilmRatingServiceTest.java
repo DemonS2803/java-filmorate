@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
@@ -8,22 +9,48 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import ru.yandex.practicum.filmorate.dto.FilmRatingDto;
 import ru.yandex.practicum.filmorate.exceptions.NoFilmRatingFoundException;
+import ru.yandex.practicum.filmorate.model.FilmRating;
+import ru.yandex.practicum.filmorate.storage.FilmRatingStorage;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.when;
 
 @Slf4j
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class FilmRatingServiceTest {
 
+    @InjectMocks
     private FilmRatingService filmRatingService;
+
+    @Mock
+    private FilmRatingStorage filmRatingStorage;
+
+    List<FilmRating> ratings;
 
     @BeforeEach
     void setUp() {
-        filmRatingService = new FilmRatingService();
+        ratings = List.of(
+                new FilmRating(1, "G"),
+                new FilmRating(2, "PG"),
+                new FilmRating(3, "PG-13"),
+                new FilmRating(4, "R"),
+                new FilmRating(5, "NC-17")
+        );
+        when(filmRatingStorage.findAll()).thenReturn(ratings);
+        when(filmRatingStorage.findById(1)).thenReturn(Optional.ofNullable(ratings.get(0)));
+        when(filmRatingStorage.findById(2)).thenReturn(Optional.ofNullable(ratings.get(1)));
+        when(filmRatingStorage.findById(3)).thenReturn(Optional.ofNullable(ratings.get(2)));
+        when(filmRatingStorage.findById(4)).thenReturn(Optional.ofNullable(ratings.get(3)));
+        when(filmRatingStorage.findById(5)).thenReturn(Optional.ofNullable(ratings.get(4)));
     }
 
     @Test
@@ -118,7 +145,7 @@ class FilmRatingServiceTest {
     void getFilmRatingById_WithInvalidId_ShouldThrowException(int invalidId) {
         assertThatThrownBy(() -> filmRatingService.getFilmRatingById(invalidId))
                 .isInstanceOf(NoFilmRatingFoundException.class)
-                .hasMessage("No film rating with id " + invalidId);
+                .hasMessage("No film rating found with id: " + invalidId);
     }
 
     @Test

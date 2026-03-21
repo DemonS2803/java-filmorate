@@ -9,8 +9,6 @@ import ru.yandex.practicum.filmorate.dto.NewFilmRequestDto;
 import ru.yandex.practicum.filmorate.dto.UpdateFilmRequestDto;
 import ru.yandex.practicum.filmorate.dto.FilmGenreDto;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.FilmRating;
-import ru.yandex.practicum.filmorate.service.FilmRatingService;
 
 public class FilmMapper {
 
@@ -27,7 +25,7 @@ public class FilmMapper {
             film.getLikedByUsers().addAll(dto.getLikedByUsers());
         }
         if (dto.getMpa() != null) {
-            film.setRating(FilmRating.valueOf(dto.getMpa().getId()));
+            film.setRating(dto.getMpa().getId());
         }
         if (dto.getGenres() != null && !dto.getGenres().isEmpty()) {
             film.getGenres().addAll(dto.getGenres().stream().map(FilmGenreDto::getId).collect(Collectors.toSet()));
@@ -47,7 +45,7 @@ public class FilmMapper {
             film.getLikedByUsers().addAll(dto.getLikedByUsers());
         }
         if (dto.getMpa() != null) {
-            film.setRating(FilmRating.valueOf(dto.getMpa().getId()));
+            film.setRating(dto.getMpa().getId());
         }
         if (dto.getGenres() != null && !dto.getGenres().isEmpty()) {
             film.getGenres().addAll(dto.getGenres().stream().map(FilmGenreDto::getId).collect(Collectors.toSet()));
@@ -64,7 +62,6 @@ public class FilmMapper {
         dto.setReleaseDate(film.getReleaseDate());
         dto.setDuration(film.getDuration());
         dto.setLikedByUsers(film.getLikedByUsers());
-        dto.setMpa(FilmRatingMapper.toDto(film.getRating(), FilmRatingService.FILM_RATING_LOCALE));
         dto.setGenres(new ArrayList<>());
 
         return dto;

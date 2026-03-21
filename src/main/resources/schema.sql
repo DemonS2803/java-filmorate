@@ -5,6 +5,7 @@ drop table film_genre if exists;
 drop table user_friends if exists;
 drop table users if exists;
 drop table films if exists;
+drop table film_ratings if exists;
 
 create table if not exists users (
     id bigserial primary key,
@@ -14,13 +15,19 @@ create table if not exists users (
     birthday date
 );
 
+create table if not exists film_ratings (
+   id serial primary key,
+   name varchar(100) not null
+);
+
 create table if not exists films (
     id bigserial primary key,
     name varchar(255) not null,
     description varchar(200),
     release_date date,
     duration int check (duration > 0),
-    rating int
+    rating int,
+    foreign key (rating) references film_ratings(id)
 );
 
 create table if not exists user_friends (
@@ -50,4 +57,4 @@ create table if not exists film_genres_mapper (
     primary key (film_id, genre_id),
     foreign key (film_id) references films(id),
     foreign key (genre_id) references film_genre(id)
-)
+);
