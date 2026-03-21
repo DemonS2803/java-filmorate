@@ -16,6 +16,7 @@ import ru.yandex.practicum.filmorate.exceptions.InvalidUserDataException;
 import ru.yandex.practicum.filmorate.exceptions.NoUserFoundException;
 import ru.yandex.practicum.filmorate.mapper.UserMapper;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.UserFriendsStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 
@@ -25,6 +26,7 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 public class UserService {
 
     private final UserStorage userStorage;
+    private final UserFriendsStorage userFriendsStorage;
 
     public List<UserDto> getUsers() {
         return userStorage.findAll().stream()
@@ -61,7 +63,7 @@ public class UserService {
         getUserByIdOrThrow(userId);
 
         log.debug("Get user friends: {}", userId);
-        return userStorage.findUserFriends(userId).stream()
+        return userFriendsStorage.findUserFriends(userId).stream()
                 .map(UserMapper::mapToUserDto)
                 .collect(Collectors.toSet());
     }
@@ -73,7 +75,7 @@ public class UserService {
 
         checkNotEquals(user, friend, "User can't make friends with himself");
 
-        boolean isCreated = userStorage.addFriend(userId, friendId);
+        boolean isCreated = userFriendsStorage.addFriend(userId, friendId);
         if (!isCreated) {
             log.error("Can't add friend {} to user {}", friendId, userId);
         }
@@ -90,7 +92,7 @@ public class UserService {
 
         checkNotEquals(user, friend, "User can't remove himself from friends");
 
-        boolean isDeleted = userStorage.removeFriend(userId, friendId);
+        boolean isDeleted = userFriendsStorage.removeFriend(userId, friendId);
         if (!isDeleted) {
             log.error("Can't remove friend {} from user {}", friendId, userId);
         }
@@ -106,7 +108,7 @@ public class UserService {
 
         checkNotEquals(user, another, "User can't get common friends with himself");
 
-        return userStorage.findCommonFriends(userId, anotherUserId).stream()
+        return userFriendsStorage.findCommonFriends(userId, anotherUserId).stream()
                 .map(UserMapper::mapToUserDto)
                 .collect(Collectors.toSet());
     }
