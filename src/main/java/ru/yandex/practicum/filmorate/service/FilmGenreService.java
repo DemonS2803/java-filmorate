@@ -1,7 +1,9 @@
 package ru.yandex.practicum.filmorate.service;
 
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -12,6 +14,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dto.FilmGenreDto;
 import ru.yandex.practicum.filmorate.exceptions.NoFilmGenreFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmGenreMapper;
+import ru.yandex.practicum.filmorate.model.FilmGenre;
 import ru.yandex.practicum.filmorate.storage.FilmGenreStorage;
 
 @Slf4j
@@ -28,12 +31,23 @@ public class FilmGenreService {
                 .collect(Collectors.toList());
     }
 
-    public List<FilmGenreDto> getFilmGenresByIds(Set<Long> ids) {
+    public List<FilmGenreDto> getFilmGenresByIds(List<Long> ids) {
         log.debug("Get film genres by ids: {}", ids);
-        List<FilmGenreDto> dtos = ids.stream().map(this::getFilmGenreByIdOrThrow)
+        return filmGenreStorage.findFilmGenresByIds(ids).stream()
+                .map(FilmGenreMapper::toDto)
                 .sorted(Comparator.comparing(FilmGenreDto::getId))
                 .collect(Collectors.toList());
-        return dtos;
+    }
+
+    public boolean isAllFilmGenresExists(List<Long> ids) {
+        log.debug("Check if all film genres exists: {}", ids);
+        Set<Long> existingIds = filmGenreStorage.findFilmGenresByIds(ids).stream()
+                .map(FilmGenre::getId)
+                .collect(Collectors.toSet());
+        boolean hasAnyMissing = ids.stream()
+                .anyMatch(id -> !existingIds.contains(id));
+
+        return !hasAnyMissing;
     }
 
     public FilmGenreDto getFilmGenreById(long id) {
@@ -47,20 +61,23 @@ public class FilmGenreService {
                 .orElseThrow(() -> new NoFilmGenreFoundException("No film genre with id " + id + " was found"));
     }
 
-    public Set<Long> getFilmGenresIdsByFilmId(Long filmId) {
+    public List<Long> getFilmGenresIdsByFilmId(Long filmId) {
         return filmGenreStorage.findFilmGenresIdsByFilmId(filmId);
     }
 
     public List<FilmGenreDto> getFilmGenresByFilmId(Long filmId) {
-        // TODO: make one query
-        return filmGenreStorage.findFilmGenresIdsByFilmId(filmId).stream()
-                .map(this::getFilmGenreById)
+        return filmGenreStorage.findFilmGenresByFilmId(filmId).stream()
+                .map(FilmGenreMapper::toDto)
                 .sorted(Comparator.comparing(FilmGenreDto::getId))
                 .collect(Collectors.toList());
     }
 
-    public void saveFilmGenresForFilm(Long filmId, Set<Long> genresIds) {
-        filmGenreStorage.saveFilmGenresForFilm(filmId, genresIds);
+    public void saveFilmGenresForFilm(Long filmId, List<Long> genresIds) {
+        filmGenreStorage.saveFilmGenresForFilm(filmId, new HashSet<>(genresIds));
+    }
+
+    public Map<Long, Set<FilmGenre>> getFilmGenresByFilmsIds(List<Long> filmsIds) {
+        return filmGenreStorage.findFilmGenresForFilms(filmsIds);
     }
 
 }

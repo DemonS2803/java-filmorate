@@ -18,8 +18,8 @@ import ru.yandex.practicum.filmorate.model.Film;
 @Primary
 @Repository("databaseFilmStorage")
 public class DatabaseFilmStorage extends DatabaseStorage<Film> implements FilmStorage {
-    private static final String FIND_ALL_QUERY = "SELECT * FROM films";
-    private static final String FIND_FILM_BY_ID_QUERY = "SELECT * FROM films WHERE id = ?";
+    private static final String FIND_ALL_QUERY = "SELECT films.*, film_ratings.name as rating_name FROM films JOIN film_ratings ON films.rating = film_ratings.id";
+    private static final String FIND_FILM_BY_ID_QUERY = "SELECT films.*, film_ratings.name as rating_name FROM films JOIN film_ratings ON films.rating = film_ratings.id WHERE films.id = ?";
     private static final String SAVE_FILM_QUERY = "INSERT INTO films (name, description, release_date, duration, rating) VALUES (?, ?, ?, ?, ?)";
     private static final String UPDATE_FILM_QUERY = "UPDATE films SET name = ?, description = ?, release_date = ?, duration = ?, rating = ? WHERE id = ?";
     private static final String DELETE_FILM_QUERY = "DELETE FROM films WHERE id = ?";
@@ -27,8 +27,8 @@ public class DatabaseFilmStorage extends DatabaseStorage<Film> implements FilmSt
     private static final String LIKE_FILM_QUERY = "INSERT INTO film_likes (film_id, user_id) VALUES (?, ?)";
     private static final String CLEAR_FILM_LIKES_QUERY = "DELETE FROM film_likes WHERE film_id = ?";
     private static final String UNLIKE_FILM_QUERY = "DELETE FROM film_likes WHERE film_id = ? AND user_id = ?";
-    private static final String FIND_MOST_POPULAR_FILMS_QUERY = "SELECT f.*, COUNT(fl.user_id) as like_count FROM films f" +
-            " LEFT JOIN film_likes fl ON f.id = fl.film_id GROUP BY f.id ORDER BY like_count DESC LIMIT ?";
+    private static final String FIND_MOST_POPULAR_FILMS_QUERY = "SELECT films.*, film_ratings.name as rating_name, COUNT(film_likes.user_id) as like_count FROM films" +
+            " LEFT JOIN film_likes ON films.id = film_likes.film_id JOIN film_ratings ON films.rating = film_ratings.id  GROUP BY films.id ORDER BY like_count DESC LIMIT ?";
     private static final String CLEAR_GENRES_FOR_FILM_QUERY = "DELETE FROM film_genres_mapper WHERE film_id = ?";
 
     @Autowired
@@ -53,7 +53,7 @@ public class DatabaseFilmStorage extends DatabaseStorage<Film> implements FilmSt
                 film.getDescription(),
                 film.getReleaseDate(),
                 film.getDuration(),
-                film.getRating()
+                film.getRating().getId()
         );
         film.setId(id);
         log.info("Saved new film with id {}", id);
@@ -70,7 +70,7 @@ public class DatabaseFilmStorage extends DatabaseStorage<Film> implements FilmSt
                 film.getDescription(),
                 film.getReleaseDate() != null ? film.getReleaseDate() : null,
                 film.getDuration(),
-                film.getRating(),
+                film.getRating().getId(),
                 film.getId()
         );
 

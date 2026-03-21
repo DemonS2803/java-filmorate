@@ -4,7 +4,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -27,6 +27,7 @@ import ru.yandex.practicum.filmorate.dto.NewFilmRequestDto;
 import ru.yandex.practicum.filmorate.dto.UpdateFilmRequestDto;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.FilmRating;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import static org.hamcrest.Matchers.hasSize;
@@ -73,8 +74,8 @@ public class FilmControllerTest {
         validFilm.setDescription("description");
         validFilm.setReleaseDate(LocalDate.parse("2000-01-01"));
         validFilm.setDuration(120);
-        validFilm.setRating(2);
-        validFilm.setGenres(new HashSet<>());
+        validFilm.setRating(new FilmRating(2, "PG-13"));
+        validFilm.setGenres(new ArrayList<>());
         validFilmDto = FilmMapper.mapToFilmDto(validFilm);
     }
 
@@ -140,8 +141,8 @@ public class FilmControllerTest {
         updatedFilm.setDescription("descr edited");
         updatedFilm.setReleaseDate(LocalDate.parse("2000-01-01"));
         updatedFilm.setDuration(150);
-        updatedFilm.setRating(2);
-        updatedFilm.setGenres(new HashSet<>());
+        updatedFilm.setRating(new FilmRating(2, "PG-13"));
+        updatedFilm.setGenres(new ArrayList<>());
         FilmDto updatedFilmDto = FilmMapper.mapToFilmDto(updatedFilm);
 
         when(filmService.updateFilm(any(UpdateFilmRequestDto.class))).thenReturn(updatedFilmDto);
@@ -202,8 +203,8 @@ public class FilmControllerTest {
         filmWithDuration.setDescription(validUpdateFilmRequestDto.getDescription());
         filmWithDuration.setReleaseDate(validUpdateFilmRequestDto.getReleaseDate());
         filmWithDuration.setDuration(duration);
-        filmWithDuration.setRating(2);
-        filmWithDuration.setGenres(new HashSet<>());
+        filmWithDuration.setRating(new FilmRating(2, "PG-13"));
+        filmWithDuration.setGenres(new ArrayList<>());
         FilmDto filmWithDurationDto = FilmMapper.mapToFilmDto(filmWithDuration);
 
         when(filmService.createFilm(any(NewFilmRequestDto.class))).thenReturn(filmWithDurationDto);
@@ -247,8 +248,8 @@ public class FilmControllerTest {
         filmWithDate.setDescription(validUpdateFilmRequestDto.getDescription());
         filmWithDate.setReleaseDate(releaseDate);
         filmWithDate.setDuration(validUpdateFilmRequestDto.getDuration());
-        filmWithDate.setRating(2);
-        filmWithDate.setGenres(new HashSet<>());
+        filmWithDate.setRating(new FilmRating(2, "PG-13"));
+        filmWithDate.setGenres(new ArrayList<>());
         FilmDto filmWithDateDto = FilmMapper.mapToFilmDto(filmWithDate);
 
         when(filmService.createFilm(any(NewFilmRequestDto.class))).thenReturn(filmWithDateDto);
@@ -291,8 +292,8 @@ public class FilmControllerTest {
             filmWithName.setDescription(validUpdateFilmRequestDto.getDescription());
             filmWithName.setReleaseDate(validUpdateFilmRequestDto.getReleaseDate());
             filmWithName.setDuration(validUpdateFilmRequestDto.getDuration());
-            filmWithName.setRating(2);
-            filmWithName.setGenres(new HashSet<>());
+            filmWithName.setRating(new FilmRating(2, "PG-13"));
+            filmWithName.setGenres(new ArrayList<>());
             FilmDto filmWithNameDto = FilmMapper.mapToFilmDto(filmWithName);
 
             when(filmService.createFilm(any(NewFilmRequestDto.class))).thenReturn(filmWithNameDto);
@@ -323,8 +324,8 @@ public class FilmControllerTest {
             filmWithDesc.setDescription(description);
             filmWithDesc.setReleaseDate(validUpdateFilmRequestDto.getReleaseDate());
             filmWithDesc.setDuration(validUpdateFilmRequestDto.getDuration());
-            filmWithDesc.setRating(2);
-            filmWithDesc.setGenres(new HashSet<>());
+            filmWithDesc.setRating(new FilmRating(2, "PG-13"));
+            filmWithDesc.setGenres(new ArrayList<>());
             FilmDto filmWithDescDto = FilmMapper.mapToFilmDto(filmWithDesc);
 
             when(filmService.createFilm(any(NewFilmRequestDto.class))).thenReturn(filmWithDescDto);

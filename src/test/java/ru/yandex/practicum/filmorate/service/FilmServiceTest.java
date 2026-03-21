@@ -20,6 +20,7 @@ import ru.yandex.practicum.filmorate.dto.UserDto;
 import ru.yandex.practicum.filmorate.exceptions.NoFilmFoundException;
 import ru.yandex.practicum.filmorate.exceptions.NoUserFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.FilmRating;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -63,7 +64,7 @@ class FilmServiceTest {
         film1.setReleaseDate(releaseDate);
         film1.setDuration(120);
         film1.setLikedByUsers(new HashSet<>());
-        film1.setRating(2);
+        film1.setRating(new FilmRating(2, "PG-13"));
 
         film2 = new Film();
         film2.setId(2L);
@@ -72,7 +73,7 @@ class FilmServiceTest {
         film2.setReleaseDate(releaseDate);
         film2.setDuration(90);
         film2.setLikedByUsers(new HashSet<>());
-        film2.setRating(2);
+        film2.setRating(new FilmRating(2, "PG-13"));
 
         film3 = new Film();
         film3.setId(3L);
@@ -81,7 +82,7 @@ class FilmServiceTest {
         film3.setReleaseDate(releaseDate);
         film3.setDuration(150);
         film3.setLikedByUsers(new HashSet<>());
-        film3.setRating(2);
+        film3.setRating(new FilmRating(2, "PG-13"));
 
         user1 = new UserDto();
         user1.setId(1L);
@@ -153,7 +154,7 @@ class FilmServiceTest {
         assertFalse(result.getLikedByUsers().contains(1L));
         assertEquals(0, result.getLikedByUsers().size());
 
-        verify(filmStorage, times(2)).findFilmById(1L);
+        verify(filmStorage, times(1)).findFilmById(1L);
         verify(userService).getUserById(1L);
     }
 
@@ -174,7 +175,6 @@ class FilmServiceTest {
     void unlikeFilm_ShouldThrowException_WhenUserNotFound() {
         when(filmStorage.findFilmById(1L)).thenReturn(Optional.ofNullable(film1));
         when(userService.getUserById(99L)).thenThrow(new NoUserFoundException(""));
-        when(filmGenreService.getFilmGenresIdsByFilmId(1L)).thenReturn(new HashSet<>());
 
         assertThrows(NoUserFoundException.class, () ->
                 filmService.unlikeFilm(99L, 1L)

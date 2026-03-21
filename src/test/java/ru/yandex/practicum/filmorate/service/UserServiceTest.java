@@ -79,8 +79,8 @@ class UserServiceTest {
 
 
         verify(userFriendsStorage, times(2)).addFriend(any(Long.class), any(Long.class));
-        verify(userStorage, times(3)).findUserById(1L);
-        verify(userStorage, times(3)).findUserById(2L);
+        verify(userStorage, times(2)).findUserById(1L);
+        verify(userStorage, times(2)).findUserById(2L);
     }
 
     @Test
@@ -160,8 +160,8 @@ class UserServiceTest {
         result = userService.removeFromFriends(2L, 1L);
 
         verify(userFriendsStorage, times(2)).removeFriend(any(Long.class), any(Long.class));
-        verify(userStorage, times(3)).findUserById(1L);
-        verify(userStorage, times(3)).findUserById(2L);
+        verify(userStorage, times(2)).findUserById(1L);
+        verify(userStorage, times(2)).findUserById(2L);
     }
 
     @Test
@@ -319,7 +319,7 @@ class UserServiceTest {
         // Assert
         assertNotNull(result);
         assertEquals(1L, result.getId());
-        verify(userStorage, times(2)).findUserById(1L);
+        verify(userStorage, times(1)).findUserById(1L);
         verify(userStorage, times(1)).findUserById(2L);
         verify(userFriendsStorage).addFriend(1L, 2L);
     }

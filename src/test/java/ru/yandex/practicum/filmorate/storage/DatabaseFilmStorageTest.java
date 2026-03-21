@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.FilmRating;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -41,8 +43,8 @@ public class DatabaseFilmStorageTest {
         testFilm.setReleaseDate(LocalDate.of(120, 1, 1)); // 2020-01-01
         testFilm.setDuration(120);
         testFilm.setLikedByUsers(new HashSet<>());
-        testFilm.setRating(2);
-        testFilm.setGenres(Set.of(1L, 3L));
+        testFilm.setRating(new FilmRating(2, "PG-13"));
+        testFilm.setGenres(List.of(1L, 3L));
     }
 
     @Test
@@ -153,8 +155,8 @@ public class DatabaseFilmStorageTest {
             film.setDescription("Description " + i);
             film.setReleaseDate(LocalDate.now());
             film.setDuration(100 + i);
-            film.setRating(2);
-            film.setGenres(new HashSet<>());
+            film.setRating(new FilmRating(2, "PG-13"));
+            film.setGenres(new ArrayList<>());
             filmStorage.save(film);
         }
 

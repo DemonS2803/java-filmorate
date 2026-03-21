@@ -75,11 +75,11 @@ public class UserService {
 
         checkNotEquals(user, friend, "User can't make friends with himself");
 
-        boolean isCreated = userFriendsStorage.addFriend(userId, friendId);
-        if (!isCreated) {
+        boolean isAdded = userFriendsStorage.addFriend(userId, friendId);
+        user.getFriends().add(friendId);
+        if (!isAdded) {
             log.error("Can't add friend {} to user {}", friendId, userId);
         }
-        user = getUserByIdOrThrow(userId);
 
         return UserMapper.mapToUserDto(user);
     }
@@ -93,10 +93,10 @@ public class UserService {
         checkNotEquals(user, friend, "User can't remove himself from friends");
 
         boolean isDeleted = userFriendsStorage.removeFriend(userId, friendId);
+        user.getFriends().remove(friendId);
         if (!isDeleted) {
             log.error("Can't remove friend {} from user {}", friendId, userId);
         }
-        user = getUserByIdOrThrow(userId);
 
         return UserMapper.mapToUserDto(user);
     }

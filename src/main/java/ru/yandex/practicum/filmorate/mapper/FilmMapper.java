@@ -5,10 +5,12 @@ import java.util.HashSet;
 import java.util.stream.Collectors;
 
 import ru.yandex.practicum.filmorate.dto.FilmDto;
+import ru.yandex.practicum.filmorate.dto.FilmRatingDto;
 import ru.yandex.practicum.filmorate.dto.NewFilmRequestDto;
 import ru.yandex.practicum.filmorate.dto.UpdateFilmRequestDto;
 import ru.yandex.practicum.filmorate.dto.FilmGenreDto;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.FilmRating;
 
 public class FilmMapper {
 
@@ -20,15 +22,16 @@ public class FilmMapper {
         film.setReleaseDate(dto.getReleaseDate());
         film.setDuration(dto.getDuration());
         film.setLikedByUsers(new HashSet<>());
-        film.setGenres(new HashSet<>());
+        film.setGenres(new ArrayList<>());
+
         if (dto.getLikedByUsers() != null && !dto.getLikedByUsers().isEmpty()) {
             film.getLikedByUsers().addAll(dto.getLikedByUsers());
         }
         if (dto.getMpa() != null) {
-            film.setRating(dto.getMpa().getId());
+            film.setRating(new FilmRating(dto.getMpa().getId(), null));
         }
         if (dto.getGenres() != null && !dto.getGenres().isEmpty()) {
-            film.getGenres().addAll(dto.getGenres().stream().map(FilmGenreDto::getId).collect(Collectors.toSet()));
+            film.setGenres(dto.getGenres().stream().map(FilmGenreDto::getId).collect(Collectors.toList()));
         }
         return film;
     }
@@ -40,15 +43,16 @@ public class FilmMapper {
         film.setReleaseDate(dto.getReleaseDate());
         film.setDuration(dto.getDuration());
         film.setLikedByUsers(new HashSet<>());
-        film.setGenres(new HashSet<>());
+        film.setGenres(new ArrayList<>());
+
         if (dto.getLikedByUsers() != null && !dto.getLikedByUsers().isEmpty()) {
             film.getLikedByUsers().addAll(dto.getLikedByUsers());
         }
         if (dto.getMpa() != null) {
-            film.setRating(dto.getMpa().getId());
+            film.setRating(new FilmRating(dto.getMpa().getId(), null));
         }
         if (dto.getGenres() != null && !dto.getGenres().isEmpty()) {
-            film.getGenres().addAll(dto.getGenres().stream().map(FilmGenreDto::getId).collect(Collectors.toSet()));
+            film.setGenres(dto.getGenres().stream().map(FilmGenreDto::getId).collect(Collectors.toList()));
         }
         return film;
     }
@@ -63,6 +67,7 @@ public class FilmMapper {
         dto.setDuration(film.getDuration());
         dto.setLikedByUsers(film.getLikedByUsers());
         dto.setGenres(new ArrayList<>());
+        dto.setMpa(new FilmRatingDto(film.getRating().getId(), film.getRating().getName()));
 
         return dto;
     }
